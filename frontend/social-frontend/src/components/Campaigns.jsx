@@ -154,21 +154,22 @@ export default function Campaigns({ token, user }) {
             <th>Platform</th>
             <th>Budget</th>
             <th>Status</th>
+            <th>Date</th>
             <th>Results</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={5} className="loading-state">Loading...</td>
+              <td colSpan={6} className="loading-state">Loading...</td>
             </tr>
           ) : campaigns.length === 0 ? (
             <tr>
-              <td colSpan={5} className="empty-state">No campaigns yet. Create one to get started.</td>
+              <td colSpan={6} className="empty-state">No campaigns yet. Create one to get started.</td>
             </tr>
           ) : (
             campaigns.map((c) => {
-              const slug = c.channel_slug || c.channel_name?.toLowerCase().replace(/\s+/g, "-") || "";
+              const slug = c.channel_slug || (c.channel_name || "").toLowerCase().replace(/\s+/g, "-") || "";
               const color = CHANNEL_COLORS[slug] || "#6366f1";
               return (
                 <tr key={c.id}>
@@ -186,6 +187,7 @@ export default function Campaigns({ token, user }) {
                       {c.status || "active"}
                     </span>
                   </td>
+                  <td>{c.created_at ? new Date(c.created_at).toLocaleDateString(undefined, { dateStyle: "short" }) : "—"}</td>
                   <td>
                     <button type="button" className="link-btn" onClick={() => alert("Analytics coming soon!")}>
                       View results

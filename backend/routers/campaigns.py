@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import database
 from typing import Optional
+from datetime import datetime, timezone
 
 router = APIRouter()
 security = HTTPBearer()
@@ -39,6 +40,7 @@ def create_campaign(body: CampaignCreate, current_user=Depends(get_current_user)
     tenant_name = tenant.get("name", tenant_id)
 
     new_id = max([c.get("id", 0) for c in database.CAMPAIGNS], default=0) + 1
+    created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     campaign = {
         "id": new_id,
         "name": body.name,
@@ -49,6 +51,7 @@ def create_campaign(body: CampaignCreate, current_user=Depends(get_current_user)
         "status": "active",
         "tenant_id": tenant_id,
         "tenant_name": tenant_name,
+        "created_at": created_at,
     }
     database.CAMPAIGNS.append(campaign)
     return {"message": "Campaign created", "campaign": campaign}

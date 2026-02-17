@@ -50,6 +50,13 @@ export const getLeads = async (token, tenantId = null) => {
   return response.data;
 };
 
+export const createLead = async (lead, token) => {
+  const response = await axios.post(`${API_URL}/leads`, lead, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
 export const updateLeadStatus = async (leadId, status, token) => {
   const response = await axios.post(
     `${API_URL}/leads/${leadId}/status`,

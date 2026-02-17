@@ -13,6 +13,8 @@ const CHANNEL_COLORS = {
 export default function Channels({ token, user }) {
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState(null);
+  const [feedback, setFeedback] = useState(null);
 
   const fetchChannels = async () => {
     try {
@@ -26,11 +28,36 @@ export default function Channels({ token, user }) {
   };
 
   const handleToggle = async (channelId) => {
+    const ch = channels.find((c) => c.id === channelId);
+    const channelName = ch?.name || "Channel";
+    const wasConnected = ch?.connected || ch?.active;
+
+    setToggling(channelId);
+
+    // Optimistic update – UI changes immediately
+    setChannels((prev) =>
+      prev.map((c) =>
+        c.id === channelId ? { ...c, connected: !wasConnected, active: !wasConnected } : c
+      )
+    );
+
     try {
       await toggleChannel(channelId, token);
-      fetchChannels();
-    } catch {
-      // Error handled
+      setFeedback({
+        type: "success",
+        message: wasConnected ? `${channelName} disconnected` : `${channelName} connected`,
+      });
+      setTimeout(() => setFeedback(null), 2500);
+    } catch (err) {
+      // Revert on error
+      setChannels((prev) =>
+        prev.map((c) => (c.id === channelId ? { ...c, connected: wasConnected, active: wasConnected } : c))
+      );
+      const msg = err?.response?.data?.detail ?? err?.message ?? "Failed to update. Is the backend running?";
+      setFeedback({ type: "error", message: msg });
+      setTimeout(() => setFeedback(null), 3000);
+    } finally {
+      setToggling(null);
     }
   };
 
@@ -44,12 +71,17 @@ export default function Channels({ token, user }) {
         <h2>Channels</h2>
         <p className="page-subtitle">Connect your social media accounts and ad platforms</p>
       </header>
+      {feedback && (
+        <div className={`channel-feedback ${feedback.type}`}>
+          {feedback.message}
+        </div>
+      )}
       {loading ? (
         <div className="loading-block">Loading channels...</div>
       ) : (
         <div className="channel-cards">
           {channels.map((ch) => {
-            const slug = ch.slug || ch.name?.toLowerCase().replace(/\s+/g, "-") || "";
+            const slug = ch.slug || (ch.name || "").toLowerCase().replace(/\s+/g, "-") || "";
             const color = CHANNEL_COLORS[slug] || "#6366f1";
             const connected = ch.connected || ch.active;
 
@@ -68,8 +100,9 @@ export default function Channels({ token, user }) {
                   type="button"
                   className={`channel-action-btn ${connected ? "disconnect" : ""}`}
                   onClick={() => handleToggle(ch.id)}
+                  disabled={toggling === ch.id}
                 >
-                  {connected ? "Disconnect" : "Connect"}
+                  {toggling === ch.id ? "..." : connected ? "Disconnect" : "Connect"}
                 </button>
               </div>
             );

@@ -1,9 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel
 import database
 
 router = APIRouter()
 security = HTTPBearer()
+
+
+class ToggleChannelBody(BaseModel):
+    channel_id: int
 
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -30,7 +35,8 @@ def get_channels(current_user=Depends(get_current_user)):
 
 
 @router.post("/channels/toggle")
-def toggle_channel(channel_id: int, current_user=Depends(get_current_user)):
+def toggle_channel(body: ToggleChannelBody, current_user=Depends(get_current_user)):
+    channel_id = body.channel_id
     channel = next((c for c in database.CHANNELS if c["id"] == channel_id), None)
     if not channel:
         raise HTTPException(status_code=404, detail="Channel not found")
