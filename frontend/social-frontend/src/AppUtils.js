@@ -41,8 +41,35 @@ export const createCampaign = async (campaign, token) => {
 };
 
 // LEADS
-export const getLeads = async (token) => {
+export const getLeads = async (token, tenantId = null) => {
+  const params = tenantId ? { tenant_id: tenantId } : {};
   const response = await axios.get(`${API_URL}/leads`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params,
+  });
+  return response.data;
+};
+
+export const updateLeadStatus = async (leadId, status, token) => {
+  const response = await axios.post(
+    `${API_URL}/leads/${leadId}/status`,
+    { status },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+// TENANTS
+export const getTenants = async (token) => {
+  const response = await axios.get(`${API_URL}/tenants`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+// DASHBOARD STATS
+export const getCampaignStats = async (token) => {
+  const response = await axios.get(`${API_URL}/campaigns/stats`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;

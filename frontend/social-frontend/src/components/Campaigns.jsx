@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getCampaigns, createCampaign, getChannels } from "../AppUtils";
 
-export default function Campaigns({ token }) {
+const CHANNEL_COLORS = {
+  facebook: "#1877f2",
+  instagram: "#e4405f",
+  linkedin: "#0a66c2",
+  twitter: "#1da1f2",
+  youtube: "#ff0000",
+  "google-ads": "#4285f4",
+};
+
+export default function Campaigns({ token, user }) {
   const [campaigns, setCampaigns] = useState([]);
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +44,7 @@ export default function Campaigns({ token }) {
   useEffect(() => {
     fetchCampaigns();
     fetchChannels();
-  }, []);
+  }, [token]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -76,13 +85,9 @@ export default function Campaigns({ token }) {
       <header className="page-header page-header-row">
         <div>
           <h2>Campaigns</h2>
-          <p className="page-subtitle">View and manage your campaigns</p>
+          <p className="page-subtitle">Create and manage your marketing campaigns</p>
         </div>
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => setShowForm(!showForm)}
-        >
+        <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Cancel" : "Add Campaign"}
         </button>
       </header>
@@ -105,15 +110,11 @@ export default function Campaigns({ token }) {
               <tr>
                 <td><label htmlFor="camp-channel">Channel</label></td>
                 <td>
-                  <select
-                    id="camp-channel"
-                    value={channelId}
-                    onChange={(e) => setChannelId(e.target.value)}
-                  >
+                  <select id="camp-channel" value={channelId} onChange={(e) => setChannelId(e.target.value)}>
                     <option value="">Select channel</option>
                     {channels.map((ch) => (
                       <option key={ch.id} value={ch.id}>
-                        {ch.name}
+                        {ch.name} {ch.connected || ch.active ? "" : "(connect first)"}
                       </option>
                     ))}
                   </select>
@@ -149,30 +150,50 @@ export default function Campaigns({ token }) {
       <table className="data-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
+            <th>Campaign</th>
             <th>Platform</th>
             <th>Budget</th>
+            <th>Status</th>
+            <th>Results</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={4} className="loading-state">Loading...</td>
+              <td colSpan={5} className="loading-state">Loading...</td>
             </tr>
           ) : campaigns.length === 0 ? (
             <tr>
-              <td colSpan={4} className="empty-state">No campaigns found</td>
+              <td colSpan={5} className="empty-state">No campaigns yet. Create one to get started.</td>
             </tr>
           ) : (
-            campaigns.map((c) => (
-              <tr key={c.id}>
-                <td>{c.id}</td>
-                <td>{c.name || "N/A"}</td>
-                <td>{c.channel_name || "N/A"}</td>
-                <td>{c.budget ?? "N/A"}</td>
-              </tr>
-            ))
+            campaigns.map((c) => {
+              const slug = c.channel_slug || c.channel_name?.toLowerCase().replace(/\s+/g, "-") || "";
+              const color = CHANNEL_COLORS[slug] || "#6366f1";
+              return (
+                <tr key={c.id}>
+                  <td>
+                    <strong>{c.name || "N/A"}</strong>
+                  </td>
+                  <td>
+                    <span className="campaign-platform" style={{ borderColor: color }}>
+                      {c.channel_name || "N/A"}
+                    </span>
+                  </td>
+                  <td>${(c.budget ?? 0).toLocaleString()}</td>
+                  <td>
+                    <span className={`status-badge status-${c.status || "active"}`}>
+                      {c.status || "active"}
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" className="link-btn" onClick={() => alert("Analytics coming soon!")}>
+                      View results
+                    </button>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>

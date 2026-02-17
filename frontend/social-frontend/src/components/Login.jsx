@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { login } from "../AppUtils";
 
-export default function Login({ setToken }) {
+export default function Login({ setAuth }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -11,7 +11,10 @@ export default function Login({ setToken }) {
     setError("");
     try {
       const data = await login(username, password);
-      setToken(data.access_token);
+      setAuth({
+        token: data.access_token,
+        user: data.user || { username: data.access_token, tenant_name: "Demo", role: "user" },
+      });
     } catch (err) {
       setError(err.response?.data?.detail || "Login failed");
     }

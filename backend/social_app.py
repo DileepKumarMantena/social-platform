@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from routers import channels, campaigns, leads, auth  # import routers
+from routers import channels, campaigns, leads, auth, tenants
 
 print(">>>>>>>>>>> THIS IS THE CORRECT social_app.py LOADED <<<<<<<<<<<")
 
@@ -21,6 +21,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(channels.router, prefix="/api")
 app.include_router(campaigns.router, prefix="/api")
 app.include_router(leads.router, prefix="/api")
+app.include_router(tenants.router, prefix="/api")
 
 @app.get("/")
 def root():

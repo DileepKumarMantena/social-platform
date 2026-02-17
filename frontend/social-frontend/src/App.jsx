@@ -10,23 +10,26 @@ import "./App.css";
 const VIEWS = { dashboard: "dashboard", channels: "channels", campaigns: "campaigns", leads: "leads" };
 
 function App() {
-  const [token, setToken] = useState(null);
+  const [auth, setAuth] = useState(null);
   const [view, setView] = useState(VIEWS.dashboard);
 
-  if (!token) return <Login setToken={setToken} />;
+  const token = auth?.token;
+  const user = auth?.user || { username: token, tenant_name: "Demo", role: "user" };
 
-  const handleLogout = () => setToken(null);
+  if (!token) return <Login setAuth={setAuth} />;
+
+  const handleLogout = () => setAuth(null);
 
   const renderContent = () => {
     switch (view) {
       case VIEWS.channels:
-        return <Channels token={token} />;
+        return <Channels token={token} user={user} />;
       case VIEWS.campaigns:
-        return <Campaigns token={token} />;
+        return <Campaigns token={token} user={user} />;
       case VIEWS.leads:
-        return <Leads token={token} />;
+        return <Leads token={token} user={user} />;
       default:
-        return <Dashboard token={token} onNavigate={setView} />;
+        return <Dashboard token={token} user={user} onNavigate={setView} />;
     }
   };
 
@@ -34,7 +37,11 @@ function App() {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1 className="sidebar-title">Social</h1>
+          <h1 className="sidebar-title">SocialMark</h1>
+          <div className="sidebar-meta">
+            <span className="tenant-badge">{user.tenant_name || "Demo"}</span>
+            <span className="role-badge">{user.role || "user"}</span>
+          </div>
         </div>
         <nav className="sidebar-nav">
           <button

@@ -1,8 +1,8 @@
-# Social Platform
+# Social Platform (SocialMark)
 
-A full-stack social media marketing platform with a **FastAPI** backend and **React + Vite** frontend. Users can log in, manage channels, create campaigns, and view leads.
+A full-stack social media marketing platform with a **FastAPI** backend and **React + Vite** frontend. Multi-tenant demo supporting Facebook, Instagram, LinkedIn, Twitter, YouTube, and Google Ads. Users connect channels, create campaigns, view leads, and sales users can follow up on leads per company.
 
-**Development Mode** — No real database; uses in-memory storage. Designed for frontend integration, learning, and testing.
+**Development Mode** — In-memory storage. Designed for demos, frontend integration, and learning.
 
 ---
 
@@ -32,7 +32,8 @@ social-platform/
 │   │   ├── auth.py         # Login
 │   │   ├── channels.py     # Channels CRUD
 │   │   ├── campaigns.py    # Campaigns CRUD
-│   │   └── leads.py        # Leads
+│   │   ├── leads.py        # Leads
+│   │   └── tenants.py      # Tenants list
 │   └── ...
 ├── frontend/
 │   └── social-frontend/
@@ -112,12 +113,14 @@ Frontend: **http://localhost:5173** (or the port Vite assigns)
 
 ---
 
-## Default Users
+## Default Users (Multi-tenant Demo)
 
-| Username | Password |
-| -------- | -------- |
-| admin    | admin    |
-| sales    | sales    |
+| Username      | Password   | Role    | Company    |
+| ------------- | ---------- | ------- | ---------- |
+| admin         | admin      | admin   | Acme Corp  |
+| sales         | sales      | sales   | Acme Corp  |
+| manager_emily | Manager@123| manager | Beta Inc   |
+| sales_peter   | Sales@321  | sales   | Beta Inc   |
 
 ---
 
@@ -134,12 +137,15 @@ Frontend: **http://localhost:5173** (or the port Vite assigns)
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
 | GET | `/` | Health check |
-| POST | `/api/login` | Login; returns token |
-| GET | `/api/channels` | List channels |
-| POST | `/api/channels/toggle` | Toggle channel (body: `{ "channel_id": 1 }`) |
-| GET | `/api/campaigns` | List campaigns |
+| POST | `/api/login` | Login; returns token + user (tenant, role) |
+| GET | `/api/channels` | List all 6 channel types with connection status |
+| POST | `/api/channels/toggle` | Connect/disconnect channel (body: `{ "channel_id": 1 }`) |
+| GET | `/api/campaigns` | List campaigns (filtered by tenant) |
+| GET | `/api/campaigns/stats` | Campaign stats |
 | POST | `/api/campaigns` | Create campaign (body: `{ "name", "channel_id", "budget" }`) |
-| GET | `/api/leads` | List leads |
+| GET | `/api/leads` | List leads (optional `?tenant_id=` for sales/admin) |
+| POST | `/api/leads/{id}/status` | Update lead status (body: `{ "status": "contacted" }`) |
+| GET | `/api/tenants` | List tenants (for sales company filter) |
 
 ---
 
@@ -161,13 +167,13 @@ Use **Authorize** and enter the username (e.g. `admin`) to test protected routes
 
 ---
 
-## Future Improvements
+## Features (Demo)
 
-- JWT authentication
-- PostgreSQL (or another DB)
-- User registration
-- Multi-tenant support
-- Campaign analytics
+- **6 channels**: Facebook, Instagram, LinkedIn, Twitter, YouTube, Google Ads
+- **Multi-tenant**: Acme Corp, Beta Inc, Gamma Ltd, Delta Co
+- **Campaigns**: Create per channel, view status, placeholder for results
+- **Leads**: Status workflow (new → contacted → qualified → won/lost), follow-up for sales
+- **Role-based**: Admin/sales see company filter on leads
 
 ---
 
