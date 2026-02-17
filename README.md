@@ -1,74 +1,114 @@
-# Social Platform API (Dev Mode)
+# Social Platform
 
-A simple backend API built using **FastAPI** that simulates a social media marketing platform.
-The application allows a user to log in, view social channels, create campaigns, and view leads.
+A full-stack social media marketing platform with a **FastAPI** backend and **React + Vite** frontend. Users can log in, manage channels, create campaigns, and view leads.
 
-This project currently runs in **Development Mode (No real authentication, no database)** using an in-memory dummy database.
-
----
-
-## What the Application Does
-
-The API mimics a marketing dashboard used by a company to manage:
-
-* Connected social media channels (Facebook, Instagram, etc.)
-* Marketing campaigns
-* Leads generated from campaigns
-
-It is designed mainly for:
-
-* Frontend integration practice (React / HTML / Vite)
-* Learning FastAPI
-* Understanding API authentication flow
-* Testing UI without a real database
+**Development Mode** — No real database; uses in-memory storage. Designed for frontend integration, learning, and testing.
 
 ---
 
 ## Tech Stack
 
-* Python 3.10+
-* FastAPI
-* Uvicorn
-* Pydantic
+### Backend
+- Python 3.10+
+- FastAPI
+- Uvicorn
+- Pydantic
 
-No external database is used.
-All data is stored in memory inside `database.py`.
+### Frontend
+- React 19
+- Vite 7
+- Axios
 
 ---
 
 ## Project Structure
 
 ```
-backend/
-│
-├── social_app.py      # Main FastAPI application
-├── database.py        # Dummy in-memory data
+social-platform/
+├── backend/
+│   ├── social_app.py       # Main FastAPI app
+│   ├── database.py         # In-memory dummy data
+│   ├── routers/
+│   │   ├── auth.py         # Login
+│   │   ├── channels.py     # Channels CRUD
+│   │   ├── campaigns.py    # Campaigns CRUD
+│   │   └── leads.py        # Leads
+│   └── ...
+├── frontend/
+│   └── social-frontend/
+│       ├── src/
+│       │   ├── App.jsx
+│       │   ├── AppUtils.js # API client
+│       │   └── components/
+│       │       ├── Login.jsx
+│       │       ├── Dashboard.jsx
+│       │       ├── Channels.jsx
+│       │       ├── Campaigns.jsx
+│       │       └── Leads.jsx
+│       ├── package.json
+│       └── vite.config.js
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## How Authentication Works (IMPORTANT)
+## Prerequisites
 
-This project does **NOT use JWT yet**.
+- Python 3.10 or higher
+- Node.js 18+ and npm
 
-Instead:
+---
 
-1. You login using username & password
-2. The server returns a token
-3. The token is actually just your username
-4. Every protected API requires:
+## Installation & Running
 
+### 1. Backend (API)
+
+**Create and activate virtual environment**
+
+```bash
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+
+# Windows
+python -m venv venv
+venv\Scripts\activate
 ```
-Authorization: Bearer <username>
+
+**Install dependencies**
+
+```bash
+pip install -r requirements.txt
 ```
 
-Example:
+**Run the server**
 
+```bash
+cd backend
+python -m uvicorn social_app:app --reload --host 0.0.0.0 --port 8000
 ```
-Authorization: Bearer admin
+
+API base URL: **http://127.0.0.1:8000**
+
+---
+
+### 2. Frontend (React)
+
+**Install dependencies**
+
+```bash
+cd frontend/social-frontend
+npm install
 ```
+
+**Run the dev server**
+
+```bash
+npm run dev
+```
+
+Frontend: **http://localhost:5173** (or the port Vite assigns)
 
 ---
 
@@ -81,208 +121,53 @@ Authorization: Bearer admin
 
 ---
 
-## Installation & Running the Project
+## Authentication
 
-### 1. Create virtual environment
-
-Mac/Linux:
-
-```
-python3 -m venv venv
-source venv/bin/activate
-```
-
-Windows:
-
-```
-python -m venv venv
-venv\Scripts\activate
-```
+- Login via `POST /api/login` with `username` and `password`.
+- Response includes `access_token`.
+- Protected routes require header: `Authorization: Bearer <access_token>`.
 
 ---
 
-### 2. Install dependencies
+## API Routes
 
-```
-pip install fastapi uvicorn
-```
-
-(Or if you have requirements.txt)
-
-```
-pip install -r requirements.txt
-```
-
----
-
-### 3. Run the server
-
-```
-python -m uvicorn social_app:app --reload
-```
-
-Server will start at:
-
-```
-http://127.0.0.1:8000
-```
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | `/` | Health check |
+| POST | `/api/login` | Login; returns token |
+| GET | `/api/channels` | List channels |
+| POST | `/api/channels/toggle` | Toggle channel (body: `{ "channel_id": 1 }`) |
+| GET | `/api/campaigns` | List campaigns |
+| POST | `/api/campaigns` | Create campaign (body: `{ "name", "channel_id", "budget" }`) |
+| GET | `/api/leads` | List leads |
 
 ---
 
 ## API Documentation (Swagger)
 
-After starting the server, open:
+When the backend is running:
 
-```
-http://127.0.0.1:8000/docs
-```
+**http://127.0.0.1:8000/docs**
 
-This is the interactive API UI where you can test all routes.
-
----
-
-## How to Login
-
-Endpoint:
-
-```
-POST /api/login
-```
-
-Request body:
-
-```json
-{
-  "username": "admin",
-  "password": "admin"
-}
-```
-
-Response:
-
-```json
-{
-  "access_token": "admin",
-  "token_type": "bearer"
-}
-```
-
----
-
-## IMPORTANT — Using Protected Routes
-
-1. Open `/docs`
-2. Click **Authorize 🔒**
-3. Enter:
-
-```
-admin
-```
-
-4. Click Authorize
-
-Now all APIs will work.
-
----
-
-## Available API Routes
-
-### Health Check
-
-```
-GET /
-```
-
-Checks if API is running.
-
----
-
-### Login
-
-```
-POST /api/login
-```
-
-Returns access token.
-
----
-
-### Channels
-
-```
-GET /api/channels
-```
-
-Returns all social channels.
-
-```
-POST /api/channels/toggle
-```
-
-Enable or disable a channel.
-
-Request:
-
-```json
-{
-  "channel_id": 1
-}
-```
-
----
-
-### Campaigns
-
-```
-GET /api/campaigns
-```
-
-List campaigns.
-
-```
-POST /api/campaigns
-```
-
-Create campaign.
-
-Request:
-
-```json
-{
-  "name": "Summer Sale",
-  "channel_id": 1,
-  "budget": 5000
-}
-```
-
----
-
-### Leads
-
-```
-GET /api/leads
-```
-
-Returns all leads.
+Use **Authorize** and enter the username (e.g. `admin`) to test protected routes.
 
 ---
 
 ## Notes
 
-* Data resets when server restarts
-* No real database yet
-* No real authentication yet
-* This is a development/testing backend
+- Data is in-memory and resets when the backend restarts.
+- No persistent database.
+- CORS allows all origins in development.
 
 ---
 
 ## Future Improvements
 
-* JWT Authentication
-* PostgreSQL database
-* User registration
-* Multi-tenant support
-* Campaign analytics
+- JWT authentication
+- PostgreSQL (or another DB)
+- User registration
+- Multi-tenant support
+- Campaign analytics
 
 ---
 
