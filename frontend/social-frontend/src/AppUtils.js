@@ -2,9 +2,18 @@ import axios from "axios";
 
 const API_URL = "http://127.0.0.1:8000/api";
 
-// LOGIN
+// AUTH
 export const login = async (username, password) => {
   const response = await axios.post(`${API_URL}/login`, { username, password });
+  return response.data;
+};
+
+export const changePassword = async (currentPassword, newPassword, token) => {
+  const response = await axios.post(
+    `${API_URL}/change-password`,
+    { current_password: currentPassword, new_password: newPassword },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
   return response.data;
 };
 

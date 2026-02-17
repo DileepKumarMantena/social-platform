@@ -1,17 +1,25 @@
 // App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import Channels from "./components/Channels";
 import Campaigns from "./components/Campaigns";
 import Leads from "./components/Leads";
+import Settings from "./components/Settings";
 import "./App.css";
 
-const VIEWS = { dashboard: "dashboard", channels: "channels", campaigns: "campaigns", leads: "leads" };
+const THEME_KEY = "socialmark-theme";
+const VIEWS = { dashboard: "dashboard", channels: "channels", campaigns: "campaigns", leads: "leads", settings: "settings" };
 
 function App() {
   const [auth, setAuth] = useState(null);
   const [view, setView] = useState(VIEWS.dashboard);
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || "dark");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
   const token = auth?.token;
   const user = auth?.user || { username: token, tenant_name: "Demo", role: "user" };
@@ -28,6 +36,8 @@ function App() {
         return <Campaigns token={token} user={user} />;
       case VIEWS.leads:
         return <Leads token={token} user={user} />;
+      case VIEWS.settings:
+        return <Settings token={token} user={user} theme={theme} onThemeChange={setTheme} />;
       default:
         return <Dashboard token={token} user={user} onNavigate={setView} />;
     }
@@ -75,6 +85,14 @@ function App() {
           >
             <span className="nav-icon">●</span>
             Leads
+          </button>
+          <button
+            type="button"
+            className={`nav-btn ${view === VIEWS.settings ? "active" : ""}`}
+            onClick={() => setView(VIEWS.settings)}
+          >
+            <span className="nav-icon">⚙</span>
+            Settings
           </button>
         </nav>
         <div className="sidebar-footer">

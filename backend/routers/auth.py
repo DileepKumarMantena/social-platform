@@ -1,14 +1,29 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional
 import database
 
 router = APIRouter()
+security = HTTPBearer()
+
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    user = next((u for u in database.USERS if u["username"] == token), None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return user
 
 
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
 
 
 class TokenResponse(BaseModel):
@@ -35,3 +50,13 @@ def login_for_access_token(body: LoginRequest):
             "role": user["role"],
         },
     )
+
+
+@router.post("/change-password")
+def change_password(body: ChangePasswordRequest, current_user=Depends(get_current_user)):
+    if current_user["password"] != body.current_password:
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if not body.new_password or len(body.new_password.strip()) < 4:
+        raise HTTPException(status_code=400, detail="New password must be at least 4 characters")
+    current_user["password"] = body.new_password.strip()
+    return {"message": "Password updated successfully"}

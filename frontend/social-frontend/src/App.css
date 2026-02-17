@@ -765,3 +765,169 @@
   margin-top: 16px;
   font-size: 0.9rem;
 }
+
+/* Light theme */
+[data-theme="light"] .app-layout {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
+}
+
+[data-theme="light"] .sidebar {
+  background: rgba(255, 255, 255, 0.9);
+  border-right-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .sidebar-header { border-bottom-color: rgba(0, 0, 0, 0.08); }
+[data-theme="light"] .tenant-badge { background: rgba(99, 102, 241, 0.2); color: #4f46e5; }
+[data-theme="light"] .role-badge { background: rgba(0, 0, 0, 0.06); color: #475569; }
+[data-theme="light"] .nav-btn { color: #475569; }
+[data-theme="light"] .nav-btn:hover { background: rgba(0, 0, 0, 0.06); color: #0f172a; }
+[data-theme="light"] .nav-btn.active { background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15)); color: #3730a3; box-shadow: 0 0 20px rgba(99, 102, 241, 0.12); }
+[data-theme="light"] .sidebar-footer { border-top-color: rgba(0, 0, 0, 0.06); }
+[data-theme="light"] .page-header h2 { color: #0f172a; }
+[data-theme="light"] .page-subtitle { color: #64748b; }
+[data-theme="light"] .data-section h3 { color: #0f172a; }
+[data-theme="light"] .settings-card { background: #fff; border-color: rgba(0, 0, 0, 0.08); }
+[data-theme="light"] .settings-card h3 { color: #0f172a; }
+[data-theme="light"] .campaign-form { background: rgba(255, 255, 255, 0.8); border-color: rgba(0, 0, 0, 0.08); }
+[data-theme="light"] .campaign-form label { color: #334155; }
+[data-theme="light"] .campaign-form input,
+[data-theme="light"] .campaign-form select { background: #fff; border-color: #e2e8f0; color: #0f172a; }
+[data-theme="light"] .profile-row dd { color: #475569; }
+[data-theme="light"] .settings-message.success { background: #dcfce7; color: #166534; }
+[data-theme="light"] .settings-message.error { background: #fee2e2; color: #b91c1c; }
+[data-theme="light"] .settings-toggle-label { color: #334155; }
+[data-theme="light"] .about-meta { color: #64748b; }
+
+/* Settings layout */
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 720px;
+}
+
+.settings-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.settings-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.profile-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.profile-row:last-child { border-bottom: none; }
+
+.profile-row dt {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 100px;
+  margin: 0;
+}
+
+.profile-row dd {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.settings-toggle-row:last-child { border-bottom: none; }
+
+.settings-toggle-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings-toggle-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.settings-theme-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.settings-theme-options button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-theme-options button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-theme-options button.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.3));
+  border-color: rgba(129, 140, 248, 0.5);
+}
+
+.toggle-switch {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.toggle-switch:hover { background: rgba(255, 255, 255, 0.25); }
+
+.toggle-switch.on {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+}
+
+.toggle-switch.on::after { transform: translateX(20px); }
+
+.about-meta {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
