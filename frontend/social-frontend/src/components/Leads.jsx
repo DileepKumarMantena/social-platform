@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { getLeads } from "../App";
+import { getLeads } from "../AppUtils";
 
 export default function Leads({ token }) {
   const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchLeads = async () => {
-    const data = await getLeads(token);
-    setLeads(data);
+    try {
+      const data = await getLeads(token);
+      setLeads(Array.isArray(data) ? data : []);
+    } catch {
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -14,15 +21,39 @@ export default function Leads({ token }) {
   }, []);
 
   return (
-    <div style={{ margin: "20px" }}>
-      <h3>Leads</h3>
-      <ul>
-        {leads.map((l) => (
-          <li key={l.id}>
-            {l.name} | Email: {l.email || "N/A"}
-          </li>
-        ))}
-      </ul>
+    <div className="data-section">
+      <header className="page-header">
+        <h2>Leads</h2>
+        <p className="page-subtitle">Browse and track your leads</p>
+      </header>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={3} className="loading-state">Loading...</td>
+            </tr>
+          ) : leads.length === 0 ? (
+            <tr>
+              <td colSpan={3} className="empty-state">No leads found</td>
+            </tr>
+          ) : (
+            leads.map((l) => (
+              <tr key={l.id}>
+                <td>{l.id}</td>
+                <td>{l.name || "N/A"}</td>
+                <td>{l.email || "N/A"}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

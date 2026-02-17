@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { login } from "../App";
+import { login } from "../AppUtils";
 
 export default function Login({ setToken }) {
   const [username, setUsername] = useState("");
@@ -18,30 +18,52 @@ export default function Login({ setToken }) {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto", textAlign: "center" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          />
-        </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          />
-        </div>
-        <button type="submit" style={{ padding: "8px 16px" }}>Login</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="login-wrapper">
+      <div className="login-card">
+        <h2>Login</h2>
+        <p className="login-subtitle">Sign in to access your dashboard</p>
+        <form onSubmit={handleSubmit} className="login-form">
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <label htmlFor="username">Username</label>
+                </td>
+                <td>
+                  <input
+                    id="username"
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label htmlFor="password">Password</label>
+                </td>
+                <td>
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td />
+                <td className="btn-cell">
+                  <button type="submit">Login</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+        {error && <p className="login-error">{error}</p>}
+      </div>
     </div>
   );
 }

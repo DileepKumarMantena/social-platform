@@ -1,47 +1,74 @@
-import React, { useState } from "react";
-import { login } from "../App";
+import React, { useEffect, useState } from "react";
+import { getChannels, toggleChannel } from "../AppUtils";
 
-export default function Login({ setToken }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+export default function Channels({ token }) {
+  const [channels, setChannels] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const fetchChannels = async () => {
     try {
-      const data = await login(username, password);
-      setToken(data.access_token);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Login failed");
+      const data = await getChannels(token);
+      setChannels(Array.isArray(data) ? data : []);
+    } catch {
+      setChannels([]);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleToggle = async (channelId) => {
+    try {
+      await toggleChannel(channelId, token);
+      fetchChannels();
+    } catch {
+      // Error handled - could add toast/notification
+    }
+  };
+
+  useEffect(() => {
+    fetchChannels();
+  }, []);
+
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto", textAlign: "center" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          />
-        </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          />
-        </div>
-        <button type="submit" style={{ padding: "8px 16px" }}>Login</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="data-section">
+      <header className="page-header">
+        <h2>Channels</h2>
+        <p className="page-subtitle">Manage your marketing channels</p>
+      </header>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={4} className="loading-state">Loading...</td>
+            </tr>
+          ) : channels.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="empty-state">No channels found</td>
+            </tr>
+          ) : (
+            channels.map((ch) => (
+              <tr key={ch.id}>
+                <td>{ch.id}</td>
+                <td>{ch.name || "N/A"}</td>
+                <td>{ch.active ? "Yes" : "No"}</td>
+                <td>
+                  <button type="button" onClick={() => handleToggle(ch.id)}>
+                    {ch.active ? "Deactivate" : "Activate"}
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
