@@ -7,8 +7,9 @@ import Dashboard from "./components/Dashboard";
 import Channels from "./components/Channels";
 import Campaigns from "./components/Campaigns";
 import Leads from "./components/Leads";
-import Analytics from "./components/Analytics";
 import Settings from "./components/Settings";
+import Analytics from "./components/Analytics";
+import CampaignScheduler from "./components/CampaignScheduler";
 import "./App.css";
 
 const THEME_KEY = "socialmark-theme";
@@ -106,6 +107,14 @@ function AppContent() {
           </button>
           <button
             type="button"
+            className={`nav-btn ${location.pathname === "/scheduler" ? "active" : ""}`}
+            onClick={() => navigate("/scheduler")}
+          >
+            <span className="nav-icon">📅</span>
+            Scheduler
+          </button>
+          <button
+            type="button"
             className={`nav-btn ${location.pathname === "/settings" ? "active" : ""}`}
             onClick={() => navigate("/settings")}
           >
@@ -128,6 +137,7 @@ function AppContent() {
           <Route path="/campaigns" element={<Campaigns token={token} user={user} />} />
           <Route path="/leads" element={<Leads token={token} user={user} />} />
           <Route path="/analytics" element={<Analytics token={token} user={user} />} />
+          <Route path="/scheduler" element={<CampaignScheduler token={token} user={user} />} />
           <Route path="/settings" element={<Settings token={token} user={user} theme={theme} onThemeChange={setTheme} />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
