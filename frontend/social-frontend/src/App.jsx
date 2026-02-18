@@ -13,10 +13,21 @@ import "./App.css";
 const THEME_KEY = "socialmark-theme";
 
 function AppContent() {
-  const [auth, setAuth] = useState(null);
+  const [auth, setAuth] = useState(() => {
+    const saved = localStorage.getItem("auth");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || "dark");
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (auth) {
+      localStorage.setItem("auth", JSON.stringify(auth));
+    } else {
+      localStorage.removeItem("auth");
+    }
+  }, [auth]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
