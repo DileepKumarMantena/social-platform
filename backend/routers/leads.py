@@ -19,6 +19,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 
+def require_role(allowed_roles: list):
+    def check_role(current_user=Depends(get_current_user)):
+        if current_user.get("role") not in allowed_roles:
+            raise HTTPException(status_code=403, detail="Access denied")
+        return current_user
+    return check_role
+
+
 class LeadStatusUpdate(BaseModel):
     status: str
 
@@ -58,7 +66,7 @@ def get_leads(current_user=Depends(get_current_user), tenant_id: Optional[str] =
 
 
 @router.post("/leads")
-def create_lead(body: LeadCreate, current_user=Depends(get_current_user)):
+def create_lead(body: LeadCreate, current_user=Depends(require_role(["lead"]))):
     if body.status not in VALID_STATUSES:
         raise HTTPException(status_code=400, detail=f"Invalid status. Use: {VALID_STATUSES}")
 
@@ -91,7 +99,7 @@ def create_lead(body: LeadCreate, current_user=Depends(get_current_user)):
 
 
 @router.post("/leads/{lead_id}/status")
-def update_lead_status(lead_id: int, body: LeadStatusUpdate, current_user=Depends(get_current_user)):
+def update_lead_status(lead_id: int, body: LeadStatusUpdate, current_user=Depends(require_role(["lead"]))):
     if body.status not in VALID_STATUSES:
         raise HTTPException(status_code=400, detail=f"Invalid status. Use: {VALID_STATUSES}")
 

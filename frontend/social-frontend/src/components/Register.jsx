@@ -6,13 +6,14 @@ export default function Register({ setAuth }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [tenantName, setTenantName] = useState("");
+  const [role, setRole] = useState("user");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const data = await register(username, password, tenantName);
+      const data = await register(username, password, tenantName, role);
       setAuth({
         token: data.access_token,
         user: data.user,
@@ -73,6 +74,23 @@ export default function Register({ setAuth }) {
                     onChange={(e) => setTenantName(e.target.value)}
                     required
                   />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label htmlFor="role">Role</label>
+                </td>
+                <td>
+                  <select
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    required
+                  >
+                    <option value="user">User (Read-only)</option>
+                    <option value="admin">Admin (Manage Channels & Campaigns)</option>
+                    <option value="lead">Lead (Full Access)</option>
+                  </select>
                 </td>
               </tr>
               <tr>

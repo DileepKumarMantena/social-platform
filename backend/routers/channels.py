@@ -19,6 +19,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 
+def require_role(allowed_roles: list):
+    def check_role(current_user=Depends(get_current_user)):
+        if current_user.get("role") not in allowed_roles:
+            raise HTTPException(status_code=403, detail="Access denied")
+        return current_user
+    return check_role
+
+
 @router.get("/channels")
 def get_channels(current_user=Depends(get_current_user)):
     tenant_id = current_user.get("tenant_id", "")
@@ -35,7 +43,7 @@ def get_channels(current_user=Depends(get_current_user)):
 
 
 @router.post("/channels/toggle")
-def toggle_channel(body: ToggleChannelBody, current_user=Depends(get_current_user)):
+def toggle_channel(body: ToggleChannelBody, current_user=Depends(require_role(["admin", "lead"]))):
     channel_id = body.channel_id
     channel = next((c for c in database.CHANNELS if c["id"] == channel_id), None)
     if not channel:

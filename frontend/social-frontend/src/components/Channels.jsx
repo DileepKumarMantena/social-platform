@@ -15,6 +15,7 @@ export default function Channels({ token, user }) {
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const canEdit = user?.role === "admin" || user?.role === "lead";
 
   const fetchChannels = async () => {
     try {
@@ -100,7 +101,8 @@ export default function Channels({ token, user }) {
                   type="button"
                   className={`channel-action-btn ${connected ? "disconnect" : ""}`}
                   onClick={() => handleToggle(ch.id)}
-                  disabled={toggling === ch.id}
+                  disabled={toggling === ch.id || !canEdit}
+                  title={!canEdit ? "Read-only access" : ""}
                 >
                   {toggling === ch.id ? "..." : connected ? "Disconnect" : "Connect"}
                 </button>

@@ -120,23 +120,79 @@ Frontend: **http://localhost:5173** (or the port Vite assigns)
 
 ### Option 1: Register New Account
 1. Go to **http://localhost:5173/register**
-2. Enter username, password, and company name
+2. Enter username, password, company name, and select role
 3. Click Register - you'll be logged in automatically
 
 ### Option 2: Use Demo Accounts
 
-| Username      | Password   | Role    | Company    |
-| ------------- | ---------- | ------- | ---------- |
-| admin         | admin      | admin   | Acme Corp  |
-| sales         | sales      | sales   | Acme Corp  |
-| manager_emily | Manager@123| manager | Beta Inc   |
-| sales_peter   | Sales@321  | sales   | Beta Inc   |
+#### Acme Corp
+| Username      | Password   | Role  | Access Level |
+| ------------- | ---------- | ----- | ------------ |
+| admin         | admin      | admin | Channels & Campaigns |
+| sales         | sales      | lead  | Full Access |
+| support_mike  | Support@123| user  | Read-only |
+| john_viewer   | viewer123  | user  | Read-only |
+
+#### Beta Inc
+| Username      | Password   | Role  | Access Level |
+| ------------- | ---------- | ----- | ------------ |
+| manager_emily | Manager@123| admin | Channels & Campaigns |
+| sales_peter   | Sales@321  | lead  | Full Access |
+| analyst_bob   | analyst123 | user  | Read-only |
+
+#### Gamma Ltd
+| Username        | Password     | Role  | Access Level |
+| --------------- | ------------ | ----- | ------------ |
+| marketing_sarah | marketing123 | admin | Channels & Campaigns |
+| sales_tom       | sales123     | lead  | Full Access |
+| hr_linda        | HR@123       | user  | Read-only |
+| finance_raj     | Finance@123  | user  | Read-only |
+
+#### Delta Co
+| Username        | Password   | Role  | Access Level |
+| --------------- | ---------- | ----- | ------------ |
+| admin_susan     | Admin@321  | admin | Channels & Campaigns |
+| sales_rachel    | Sales@456  | lead  | Full Access |
+| developer_steve | Dev@123    | user  | Read-only |
+
+#### Hippo Cloud
+| Username      | Password | Role  | Access Level |
+| ------------- | -------- | ----- | ------------ |
+| hippo_admin   | hippo123 | admin | Channels & Campaigns |
+| hippo_lead    | hippo456 | lead  | Full Access |
+| hippo_viewer  | hippo789 | user  | Read-only |
+
+#### Nlite
+| Username     | Password | Role  | Access Level |
+| ------------ | -------- | ----- | ------------ |
+| nlite_admin  | nlite123 | admin | Channels & Campaigns |
+| nlite_lead   | nlite456 | lead  | Full Access |
+| nlite_viewer | nlite789 | user  | Read-only |
+
+---
+
+## Role-Based Access Control
+
+### User (Read-Only)
+- ✅ View channels, campaigns, and leads
+- ❌ Cannot create or modify anything
+
+### Admin (Manage Channels & Campaigns)
+- ✅ View and connect/disconnect channels
+- ✅ View and create campaigns
+- ✅ View leads (read-only)
+- ❌ Cannot create or update leads
+
+### Lead (Full Access)
+- ✅ View and connect/disconnect channels
+- ✅ View and create campaigns
+- ✅ View, create, and update leads
 
 ---
 
 ## Authentication
 
-- Register via `POST /api/register` with `username`, `password`, and `tenant_name`
+- Register via `POST /api/register` with `username`, `password`, `tenant_name`, and `role`
 - Login via `POST /api/login` with `username` and `password`
 - Response includes `access_token`
 - Protected routes require header: `Authorization: Bearer <access_token>`
@@ -146,21 +202,21 @@ Frontend: **http://localhost:5173** (or the port Vite assigns)
 
 ## API Routes
 
-| Method | Endpoint | Description |
-| ------ | -------- | ----------- |
-| GET | `/` | Health check |
-| POST | `/api/register` | Register new user; returns token + user |
-| POST | `/api/login` | Login; returns token + user (tenant, role) |
-| POST | `/api/change-password` | Change password |
-| GET | `/api/channels` | List all 6 channel types with connection status |
-| POST | `/api/channels/toggle` | Connect/disconnect channel (body: `{ "channel_id": 1 }`) |
-| GET | `/api/campaigns` | List campaigns (filtered by tenant) |
-| GET | `/api/campaigns/stats` | Campaign stats |
-| POST | `/api/campaigns` | Create campaign (body: `{ "name", "channel_id", "budget" }`) |
-| GET | `/api/leads` | List leads (optional `?tenant_id=` for sales/admin) |
-| POST | `/api/leads` | Create lead |
-| POST | `/api/leads/{id}/status` | Update lead status (body: `{ "status": "contacted" }`) |
-| GET | `/api/tenants` | List tenants (for sales company filter) |
+| Method | Endpoint | Description | Required Role |
+| ------ | -------- | ----------- | ------------- |
+| GET | `/` | Health check | None |
+| POST | `/api/register` | Register new user; returns token + user | None |
+| POST | `/api/login` | Login; returns token + user (tenant, role) | None |
+| POST | `/api/change-password` | Change password | Any authenticated |
+| GET | `/api/channels` | List all 6 channel types with connection status | Any authenticated |
+| POST | `/api/channels/toggle` | Connect/disconnect channel | admin, lead |
+| GET | `/api/campaigns` | List campaigns (filtered by tenant) | Any authenticated |
+| GET | `/api/campaigns/stats` | Campaign stats | Any authenticated |
+| POST | `/api/campaigns` | Create campaign | admin, lead |
+| GET | `/api/leads` | List leads | Any authenticated |
+| POST | `/api/leads` | Create lead | lead |
+| POST | `/api/leads/{id}/status` | Update lead status | lead |
+| GET | `/api/tenants` | List tenants | Any authenticated |
 
 ---
 
@@ -201,12 +257,12 @@ Use **Authorize** and enter the username (e.g. `admin`) to test protected routes
 
 ## Features (Demo)
 
-- **Registration**: Create new accounts with auto-tenant creation
+- **Registration**: Create new accounts with auto-tenant creation and role selection
+- **Role-Based Access**: Three role types (user, admin, lead) with different permissions
 - **6 channels**: Facebook, Instagram, LinkedIn, Twitter, YouTube, Google Ads
 - **Multi-tenant**: Each registered user gets their own company/tenant
 - **Campaigns**: Create per channel, view status, placeholder for results
 - **Leads**: Status workflow (new → contacted → qualified → won/lost), follow-up for sales
-- **Role-based**: Admin/sales see company filter on leads
 - **Single Page App**: URL-based routing with refresh support
 
 ---

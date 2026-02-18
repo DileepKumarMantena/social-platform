@@ -20,6 +20,7 @@ export default function Campaigns({ token, user }) {
   const [budget, setBudget] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const canEdit = user?.role === "admin" || user?.role === "lead";
 
   const fetchCampaigns = async () => {
     try {
@@ -87,9 +88,11 @@ export default function Campaigns({ token, user }) {
           <h2>Campaigns</h2>
           <p className="page-subtitle">Create and manage your marketing campaigns</p>
         </div>
-        <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "Add Campaign"}
-        </button>
+        {canEdit && (
+          <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
+            {showForm ? "Cancel" : "Add Campaign"}
+          </button>
+        )}
       </header>
       {showForm && (
         <form onSubmit={handleCreate} className="campaign-form">

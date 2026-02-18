@@ -10,18 +10,37 @@ TENANTS = {
 }
 
 USERS = [
+    # Acme Corp
     {"username": "admin", "password": "admin", "role": "admin", "tenant_id": "tenant_123"},
-    {"username": "sales", "password": "sales", "role": "sales", "tenant_id": "tenant_123"},
-    {"username": "support_mike", "password": "Support@123", "role": "support", "tenant_id": "tenant_123"},
-    {"username": "manager_emily", "password": "Manager@123", "role": "manager", "tenant_id": "tenant_456"},
-    {"username": "sales_peter", "password": "Sales@321", "role": "sales", "tenant_id": "tenant_456"},
-    {"username": "hr_linda", "password": "HR@123", "role": "hr", "tenant_id": "tenant_789"},
-    {"username": "finance_raj", "password": "Finance@123", "role": "finance", "tenant_id": "tenant_789"},
+    {"username": "sales", "password": "sales", "role": "lead", "tenant_id": "tenant_123"},
+    {"username": "support_mike", "password": "Support@123", "role": "user", "tenant_id": "tenant_123"},
+    {"username": "john_viewer", "password": "viewer123", "role": "user", "tenant_id": "tenant_123"},
+    
+    # Beta Inc
+    {"username": "manager_emily", "password": "Manager@123", "role": "admin", "tenant_id": "tenant_456"},
+    {"username": "sales_peter", "password": "Sales@321", "role": "lead", "tenant_id": "tenant_456"},
+    {"username": "analyst_bob", "password": "analyst123", "role": "user", "tenant_id": "tenant_456"},
+    
+    # Gamma Ltd
+    {"username": "hr_linda", "password": "HR@123", "role": "user", "tenant_id": "tenant_789"},
+    {"username": "finance_raj", "password": "Finance@123", "role": "user", "tenant_id": "tenant_789"},
+    {"username": "marketing_sarah", "password": "marketing123", "role": "admin", "tenant_id": "tenant_789"},
+    {"username": "sales_tom", "password": "sales123", "role": "lead", "tenant_id": "tenant_789"},
+    
+    # Delta Co
     {"username": "admin_susan", "password": "Admin@321", "role": "admin", "tenant_id": "tenant_101"},
-    {"username": "developer_steve", "password": "Dev@123", "role": "developer", "tenant_id": "tenant_101"},
-    {"username": "sales_rachel", "password": "Sales@456", "role": "sales", "tenant_id": "tenant_101"},
-    {"username": "hippo_user", "password": "hippo123", "role": "manager", "tenant_id": "tenant_hippo"},
-    {"username": "nlite_user", "password": "nlite123", "role": "manager", "tenant_id": "tenant_nlite"},
+    {"username": "developer_steve", "password": "Dev@123", "role": "user", "tenant_id": "tenant_101"},
+    {"username": "sales_rachel", "password": "Sales@456", "role": "lead", "tenant_id": "tenant_101"},
+    
+    # Hippo Cloud
+    {"username": "hippo_admin", "password": "hippo123", "role": "admin", "tenant_id": "tenant_hippo"},
+    {"username": "hippo_lead", "password": "hippo456", "role": "lead", "tenant_id": "tenant_hippo"},
+    {"username": "hippo_viewer", "password": "hippo789", "role": "user", "tenant_id": "tenant_hippo"},
+    
+    # Nlite
+    {"username": "nlite_admin", "password": "nlite123", "role": "admin", "tenant_id": "tenant_nlite"},
+    {"username": "nlite_lead", "password": "nlite456", "role": "lead", "tenant_id": "tenant_nlite"},
+    {"username": "nlite_viewer", "password": "nlite789", "role": "user", "tenant_id": "tenant_nlite"},
 ]
 
 # All available channel types (Facebook, Instagram, LinkedIn, Twitter, YouTube, Google Ads)

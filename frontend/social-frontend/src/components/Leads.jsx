@@ -18,6 +18,7 @@ export default function Leads({ token, user }) {
   const [submitting, setSubmitting] = useState(false);
 
   const isSalesOrAdmin = ["sales", "admin"].includes(user?.role || "");
+  const canEdit = user?.role === "lead";
 
   const fetchLeads = async (tenantId = null) => {
     try {
@@ -137,9 +138,11 @@ export default function Leads({ token, user }) {
               </select>
             </div>
           )}
-          <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Cancel" : "Add Lead"}
-          </button>
+          {canEdit && (
+            <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
+              {showForm ? "Cancel" : "Add Lead"}
+            </button>
+          )}
         </div>
       </header>
       {showForm && (
@@ -259,7 +262,7 @@ export default function Leads({ token, user }) {
                     className="status-select"
                     value={l.status || "new"}
                     onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                    disabled={updating === l.id}
+                    disabled={updating === l.id || !canEdit}
                   >
                     {STATUS_OPTIONS.map((s) => (
                       <option key={s} value={s}>

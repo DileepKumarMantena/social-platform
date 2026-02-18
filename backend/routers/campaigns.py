@@ -17,6 +17,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 
+def require_role(allowed_roles: list):
+    def check_role(current_user=Depends(get_current_user)):
+        if current_user.get("role") not in allowed_roles:
+            raise HTTPException(status_code=403, detail="Access denied")
+        return current_user
+    return check_role
+
+
 class CampaignCreate(BaseModel):
     name: str
     channel_id: int
@@ -30,7 +38,7 @@ def get_campaigns(current_user=Depends(get_current_user)):
 
 
 @router.post("/campaigns")
-def create_campaign(body: CampaignCreate, current_user=Depends(get_current_user)):
+def create_campaign(body: CampaignCreate, current_user=Depends(require_role(["admin", "lead"]))):
     channel = next((c for c in database.CHANNELS if c["id"] == body.channel_id), None)
     if not channel:
         raise HTTPException(status_code=400, detail="Invalid channel_id")
