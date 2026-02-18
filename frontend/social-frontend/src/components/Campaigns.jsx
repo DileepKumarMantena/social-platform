@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCampaigns, createCampaign, getChannels } from "../AppUtils";
+import "./Campaigns.css";
 
 const CHANNEL_COLORS = {
   facebook: "#1877f2",
@@ -11,197 +11,289 @@ const CHANNEL_COLORS = {
 };
 
 export default function Campaigns({ token, user }) {
-  const [campaigns, setCampaigns] = useState([]);
-  const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState("");
-  const [channelId, setChannelId] = useState("");
-  const [budget, setBudget] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
   const canEdit = user?.role === "admin" || user?.role === "lead";
 
-  const fetchCampaigns = async () => {
-    try {
-      const data = await getCampaigns(token);
-      setCampaigns(Array.isArray(data) ? data : []);
-    } catch {
-      setCampaigns([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchChannels = async () => {
-    try {
-      const data = await getChannels(token);
-      setChannels(Array.isArray(data) ? data : []);
-    } catch {
-      setChannels([]);
-    }
-  };
+  const dummyCampaigns = [
+    {
+      id: 1,
+      name: "Summer Sale 2024",
+      channel_name: "Facebook",
+      channel_slug: "facebook",
+      budget: 5000,
+      status: "active",
+      impressions: 245000,
+      clicks: 8200,
+      engagement: 3.4,
+      created_at: "2024-01-15",
+    },
+    {
+      id: 2,
+      name: "Product Launch",
+      channel_name: "Instagram",
+      channel_slug: "instagram",
+      budget: 3500,
+      status: "active",
+      impressions: 189000,
+      clicks: 6700,
+      engagement: 3.5,
+      created_at: "2024-01-20",
+    },
+    {
+      id: 3,
+      name: "Brand Awareness",
+      channel_name: "LinkedIn",
+      channel_slug: "linkedin",
+      budget: 2500,
+      status: "pending",
+      impressions: 98000,
+      clicks: 2100,
+      engagement: 2.1,
+      created_at: "2024-02-01",
+    },
+    {
+      id: 4,
+      name: "Holiday Special",
+      channel_name: "Google Ads",
+      channel_slug: "google-ads",
+      budget: 8000,
+      status: "active",
+      impressions: 512000,
+      clicks: 15600,
+      engagement: 3.0,
+      created_at: "2024-02-10",
+    },
+    {
+      id: 5,
+      name: "Newsletter Campaign",
+      channel_name: "Twitter",
+      channel_slug: "twitter",
+      budget: 1500,
+      status: "completed",
+      impressions: 67000,
+      clicks: 3400,
+      engagement: 5.1,
+      created_at: "2024-01-05",
+    },
+  ];
 
   useEffect(() => {
-    fetchCampaigns();
-    fetchChannels();
-  }, [token]);
+    setLoading(false);
+  }, []);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (!name.trim()) {
-      setError("Name is required");
-      return;
-    }
-    if (!channelId) {
-      setError("Please select a channel");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await createCampaign(
-        {
-          name: name.trim(),
-          channel_id: parseInt(channelId, 10),
-          budget: parseFloat(budget) || 0,
-        },
-        token
-      );
-      setName("");
-      setChannelId("");
-      setBudget("");
-      setShowForm(false);
-      setLoading(true);
-      await fetchCampaigns();
-    } catch (err) {
-      setError(err.response?.data?.detail || "Failed to create campaign");
-    } finally {
-      setSubmitting(false);
+  const handleViewResults = (campaign) => {
+    setSelectedCampaign(campaign);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "active": return "#10b981";
+      case "pending": return "#f59e0b";
+      case "completed": return "#6b7280";
+      default: return "#6b7280";
     }
   };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "active": return "🟢";
+      case "pending": return "🟡";
+      case "completed": return "⚪";
+      default: return "⚪";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="data-section">
+        <div className="loading-state">Loading campaigns...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="data-section">
       <header className="page-header page-header-row">
         <div>
-          <h2>Campaigns</h2>
+          <h2>🚀 Campaigns</h2>
           <p className="page-subtitle">Create and manage your marketing campaigns</p>
         </div>
         {canEdit && (
           <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Cancel" : "Add Campaign"}
+            {showForm ? "Cancel" : "➕ Add Campaign"}
           </button>
         )}
       </header>
+
       {showForm && (
-        <form onSubmit={handleCreate} className="campaign-form">
-          <table>
-            <tbody>
-              <tr>
-                <td><label htmlFor="camp-name">Name</label></td>
-                <td>
-                  <input
-                    id="camp-name"
-                    type="text"
-                    placeholder="Campaign name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td><label htmlFor="camp-channel">Channel</label></td>
-                <td>
-                  <select id="camp-channel" value={channelId} onChange={(e) => setChannelId(e.target.value)}>
-                    <option value="">Select channel</option>
-                    {channels.map((ch) => (
-                      <option key={ch.id} value={ch.id}>
-                        {ch.name} {ch.connected || ch.active ? "" : "(connect first)"}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td><label htmlFor="camp-budget">Budget</label></td>
-                <td>
-                  <input
-                    id="camp-budget"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td />
-                <td className="btn-cell">
-                  <button type="submit" disabled={submitting}>
-                    {submitting ? "Creating..." : "Create Campaign"}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {error && <p className="form-error">{error}</p>}
-        </form>
+        <div className="campaign-form-card">
+          <h3>📝 Create New Campaign</h3>
+          <form className="campaign-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="camp-name">Campaign Name</label>
+                <input
+                  id="camp-name"
+                  type="text"
+                  placeholder="Enter campaign name"
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="camp-channel">Channel</label>
+                <select id="camp-channel" className="form-select">
+                  <option value="">Select channel</option>
+                  <option value="facebook">📘 Facebook</option>
+                  <option value="instagram">📷 Instagram</option>
+                  <option value="linkedin">💼 LinkedIn</option>
+                  <option value="twitter">🐦 Twitter</option>
+                  <option value="google-ads">🔍 Google Ads</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="camp-budget">Budget ($)</label>
+                <input
+                  id="camp-budget"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className="form-input"
+                />
+              </div>
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary">
+                ✨ Create Campaign
+              </button>
+            </div>
+          </form>
+        </div>
       )}
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Campaign</th>
-            <th>Platform</th>
-            <th>Budget</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Results</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={6} className="loading-state">Loading...</td>
-            </tr>
-          ) : campaigns.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="empty-state">No campaigns yet. Create one to get started.</td>
-            </tr>
-          ) : (
-            campaigns.map((c) => {
-              const slug = c.channel_slug || (c.channel_name || "").toLowerCase().replace(/\s+/g, "-") || "";
-              const color = CHANNEL_COLORS[slug] || "#6366f1";
-              return (
-                <tr key={c.id}>
-                  <td>
-                    <strong>{c.name || "N/A"}</strong>
-                  </td>
-                  <td>
-                    <span className="campaign-platform" style={{ borderColor: color }}>
-                      {c.channel_name || "N/A"}
+
+      <div className="campaigns-grid">
+        {dummyCampaigns.map((campaign) => {
+          const color = CHANNEL_COLORS[campaign.channel_slug] || "#6366f1";
+          return (
+            <div key={campaign.id} className="campaign-card">
+              <div className="campaign-header">
+                <div className="campaign-info">
+                  <h3 className="campaign-name">{campaign.name}</h3>
+                  <div className="campaign-channel" style={{ borderColor: color }}>
+                    <span className="channel-icon">
+                      {campaign.channel_slug === "facebook" && "📘"}
+                      {campaign.channel_slug === "instagram" && "📷"}
+                      {campaign.channel_slug === "linkedin" && "💼"}
+                      {campaign.channel_slug === "twitter" && "🐦"}
+                      {campaign.channel_slug === "google-ads" && "🔍"}
                     </span>
-                  </td>
-                  <td>${(c.budget ?? 0).toLocaleString()}</td>
-                  <td>
-                    <span className={`status-badge status-${c.status || "active"}`}>
-                      {c.status || "active"}
-                    </span>
-                  </td>
-                  <td>{c.created_at ? new Date(c.created_at).toLocaleDateString(undefined, { dateStyle: "short" }) : "—"}</td>
-                  <td>
-                    <button type="button" className="link-btn" onClick={() => alert("Analytics coming soon!")}>
-                      View results
-                    </button>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+                    {campaign.channel_name}
+                  </div>
+                </div>
+                <div className="campaign-status">
+                  <span className="status-indicator" style={{ color: getStatusColor(campaign.status) }}>
+                    {getStatusIcon(campaign.status)} {campaign.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="campaign-metrics">
+                <div className="metric">
+                  <span className="metric-icon">👁️</span>
+                  <div className="metric-info">
+                    <span className="metric-value">{campaign.impressions.toLocaleString()}</span>
+                    <span className="metric-label">Impressions</span>
+                  </div>
+                </div>
+                <div className="metric">
+                  <span className="metric-icon">👆</span>
+                  <div className="metric-info">
+                    <span className="metric-value">{campaign.clicks.toLocaleString()}</span>
+                    <span className="metric-label">Clicks</span>
+                  </div>
+                </div>
+                <div className="metric">
+                  <span className="metric-icon">💝</span>
+                  <div className="metric-info">
+                    <span className="metric-value">{campaign.engagement}%</span>
+                    <span className="metric-label">Engagement</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="campaign-footer">
+                <div className="campaign-budget">
+                  <span className="budget-label">Budget:</span>
+                  <span className="budget-value">${campaign.budget.toLocaleString()}</span>
+                </div>
+                <button
+                  type="button"
+                  className="btn-results"
+                  onClick={() => handleViewResults(campaign)}
+                >
+                  📊 View Results
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {selectedCampaign && (
+        <div className="modal-overlay" onClick={() => setSelectedCampaign(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📊 Campaign Analytics</h3>
+              <button className="modal-close" onClick={() => setSelectedCampaign(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="analytics-summary">
+                <div className="summary-card">
+                  <h4>{selectedCampaign.name}</h4>
+                  <p className="summary-channel">{selectedCampaign.channel_name}</p>
+                </div>
+                <div className="summary-metrics">
+                  <div className="summary-metric">
+                    <span className="summary-value">{selectedCampaign.impressions.toLocaleString()}</span>
+                    <span className="summary-label">Impressions</span>
+                  </div>
+                  <div className="summary-metric">
+                    <span className="summary-value">{selectedCampaign.clicks.toLocaleString()}</span>
+                    <span className="summary-label">Clicks</span>
+                  </div>
+                  <div className="summary-metric">
+                    <span className="summary-value">{selectedCampaign.engagement}%</span>
+                    <span className="summary-label">Engagement</span>
+                  </div>
+                </div>
+              </div>
+              <div className="analytics-details">
+                <div className="detail-row">
+                  <span className="detail-label">Budget Used:</span>
+                  <span className="detail-value">${(selectedCampaign.budget * 0.75).toLocaleString()} / ${selectedCampaign.budget.toLocaleString()}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Cost per Click:</span>
+                  <span className="detail-value">${(selectedCampaign.budget / selectedCampaign.clicks).toFixed(2)}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Conversion Rate:</span>
+                  <span className="detail-value">{(selectedCampaign.engagement * 0.3).toFixed(1)}%</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Start Date:</span>
+                  <span className="detail-value">{new Date(selectedCampaign.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

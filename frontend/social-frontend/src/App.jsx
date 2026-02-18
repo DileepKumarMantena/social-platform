@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard";
 import Channels from "./components/Channels";
 import Campaigns from "./components/Campaigns";
 import Leads from "./components/Leads";
+import Analytics from "./components/Analytics";
 import Settings from "./components/Settings";
 import "./App.css";
 
@@ -97,6 +98,14 @@ function AppContent() {
           </button>
           <button
             type="button"
+            className={`nav-btn ${location.pathname === "/analytics" ? "active" : ""}`}
+            onClick={() => navigate("/analytics")}
+          >
+            <span className="nav-icon">📈</span>
+            Analytics
+          </button>
+          <button
+            type="button"
             className={`nav-btn ${location.pathname === "/settings" ? "active" : ""}`}
             onClick={() => navigate("/settings")}
           >
@@ -118,6 +127,7 @@ function AppContent() {
           <Route path="/channels" element={<Channels token={token} user={user} />} />
           <Route path="/campaigns" element={<Campaigns token={token} user={user} />} />
           <Route path="/leads" element={<Leads token={token} user={user} />} />
+          <Route path="/analytics" element={<Analytics token={token} user={user} />} />
           <Route path="/settings" element={<Settings token={token} user={user} theme={theme} onThemeChange={setTheme} />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
