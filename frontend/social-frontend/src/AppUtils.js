@@ -8,6 +8,16 @@ export const login = async (username, password) => {
   return response.data;
 };
 
+export const register = async (username, password, tenantName, role = "user") => {
+  const response = await axios.post(`${API_URL}/register`, {
+    username,
+    password,
+    tenant_name: tenantName,
+    role,
+  });
+  return response.data;
+};
+
 export const changePassword = async (currentPassword, newPassword, token) => {
   const response = await axios.post(
     `${API_URL}/change-password`,

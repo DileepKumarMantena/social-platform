@@ -21,6 +21,13 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    tenant_name: str
+    role: str = "user"
+
+
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
@@ -48,6 +55,36 @@ def login_for_access_token(body: LoginRequest):
             "tenant_id": user["tenant_id"],
             "tenant_name": tenant_name,
             "role": user["role"],
+        },
+    )
+
+
+@router.post("/register", response_model=TokenResponse)
+def register(body: RegisterRequest):
+    if any(u["username"] == body.username for u in database.USERS):
+        raise HTTPException(status_code=400, detail="Username already exists")
+    if len(body.password.strip()) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+    
+    tenant_id = f"tenant_{body.username}"
+    database.TENANTS[tenant_id] = {"name": body.tenant_name}
+    
+    new_user = {
+        "username": body.username,
+        "password": body.password,
+        "role": body.role,
+        "tenant_id": tenant_id,
+    }
+    database.USERS.append(new_user)
+    database.CHANNEL_CONNECTIONS[tenant_id] = []
+    
+    return TokenResponse(
+        access_token=body.username,
+        user={
+            "username": body.username,
+            "tenant_id": tenant_id,
+            "tenant_name": body.tenant_name,
+            "role": body.role,
         },
     )
 

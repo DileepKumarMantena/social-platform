@@ -1,31 +1,32 @@
 import React, { useState } from "react";
-import { login } from "../AppUtils";
+import { register } from "../AppUtils";
 import { Link } from "react-router-dom";
 
-export default function Login({ setAuth }) {
+export default function Register({ setAuth }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [tenantName, setTenantName] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const data = await login(username, password);
+      const data = await register(username, password, tenantName);
       setAuth({
         token: data.access_token,
-        user: data.user || { username: data.access_token, tenant_name: "Demo", role: "user" },
+        user: data.user,
       });
     } catch (err) {
-      setError(err.response?.data?.detail || "Login failed");
+      setError(err.response?.data?.detail || "Registration failed");
     }
   };
 
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <h2>Login</h2>
-        <p className="login-subtitle">Sign in to access your dashboard</p>
+        <h2>Register</h2>
+        <p className="login-subtitle">Create your account</p>
         <form onSubmit={handleSubmit} className="login-form">
           <table>
             <tbody>
@@ -40,6 +41,7 @@ export default function Login({ setAuth }) {
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    required
                   />
                 </td>
               </tr>
@@ -54,13 +56,29 @@ export default function Login({ setAuth }) {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label htmlFor="tenantName">Company Name</label>
+                </td>
+                <td>
+                  <input
+                    id="tenantName"
+                    type="text"
+                    placeholder="Company Name"
+                    value={tenantName}
+                    onChange={(e) => setTenantName(e.target.value)}
+                    required
                   />
                 </td>
               </tr>
               <tr>
                 <td />
                 <td className="btn-cell">
-                  <button type="submit">Login</button>
+                  <button type="submit">Register</button>
                 </td>
               </tr>
             </tbody>
@@ -68,7 +86,7 @@ export default function Login({ setAuth }) {
         </form>
         {error && <p className="login-error">{error}</p>}
         <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Don't have an account? <Link to="/register">Register</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

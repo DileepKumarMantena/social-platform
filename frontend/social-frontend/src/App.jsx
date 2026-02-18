@@ -1,6 +1,8 @@
 // App.jsx
 import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import Login from "./components/Login";
+import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
 import Channels from "./components/Channels";
 import Campaigns from "./components/Campaigns";
@@ -9,12 +11,12 @@ import Settings from "./components/Settings";
 import "./App.css";
 
 const THEME_KEY = "socialmark-theme";
-const VIEWS = { dashboard: "dashboard", channels: "channels", campaigns: "campaigns", leads: "leads", settings: "settings" };
 
-function App() {
+function AppContent() {
   const [auth, setAuth] = useState(null);
-  const [view, setView] = useState(VIEWS.dashboard);
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || "dark");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -24,24 +26,20 @@ function App() {
   const token = auth?.token;
   const user = auth?.user || { username: token, tenant_name: "Demo", role: "user" };
 
-  if (!token) return <Login setAuth={setAuth} />;
-
-  const handleLogout = () => setAuth(null);
-
-  const renderContent = () => {
-    switch (view) {
-      case VIEWS.channels:
-        return <Channels token={token} user={user} />;
-      case VIEWS.campaigns:
-        return <Campaigns token={token} user={user} />;
-      case VIEWS.leads:
-        return <Leads token={token} user={user} />;
-      case VIEWS.settings:
-        return <Settings token={token} user={user} theme={theme} onThemeChange={setTheme} />;
-      default:
-        return <Dashboard token={token} user={user} onNavigate={setView} />;
-    }
+  const handleLogout = () => {
+    setAuth(null);
+    navigate("/login");
   };
+
+  if (!token) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login setAuth={setAuth} />} />
+        <Route path="/register" element={<Register setAuth={setAuth} />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <div className="app-layout">
@@ -56,40 +54,40 @@ function App() {
         <nav className="sidebar-nav">
           <button
             type="button"
-            className={`nav-btn ${view === VIEWS.dashboard ? "active" : ""}`}
-            onClick={() => setView(VIEWS.dashboard)}
+            className={`nav-btn ${location.pathname === "/" || location.pathname === "/dashboard" ? "active" : ""}`}
+            onClick={() => navigate("/dashboard")}
           >
             <span className="nav-icon">◉</span>
             Dashboard
           </button>
           <button
             type="button"
-            className={`nav-btn ${view === VIEWS.channels ? "active" : ""}`}
-            onClick={() => setView(VIEWS.channels)}
+            className={`nav-btn ${location.pathname === "/channels" ? "active" : ""}`}
+            onClick={() => navigate("/channels")}
           >
             <span className="nav-icon">◆</span>
             Channels
           </button>
           <button
             type="button"
-            className={`nav-btn ${view === VIEWS.campaigns ? "active" : ""}`}
-            onClick={() => setView(VIEWS.campaigns)}
+            className={`nav-btn ${location.pathname === "/campaigns" ? "active" : ""}`}
+            onClick={() => navigate("/campaigns")}
           >
             <span className="nav-icon">◇</span>
             Campaigns
           </button>
           <button
             type="button"
-            className={`nav-btn ${view === VIEWS.leads ? "active" : ""}`}
-            onClick={() => setView(VIEWS.leads)}
+            className={`nav-btn ${location.pathname === "/leads" ? "active" : ""}`}
+            onClick={() => navigate("/leads")}
           >
             <span className="nav-icon">●</span>
             Leads
           </button>
           <button
             type="button"
-            className={`nav-btn ${view === VIEWS.settings ? "active" : ""}`}
-            onClick={() => setView(VIEWS.settings)}
+            className={`nav-btn ${location.pathname === "/settings" ? "active" : ""}`}
+            onClick={() => navigate("/settings")}
           >
             <span className="nav-icon">⚙</span>
             Settings
@@ -102,8 +100,26 @@ function App() {
           </button>
         </div>
       </aside>
-      <main className="main-content">{renderContent()}</main>
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Dashboard token={token} user={user} onNavigate={(view) => navigate(`/${view}`)} />} />
+          <Route path="/dashboard" element={<Dashboard token={token} user={user} onNavigate={(view) => navigate(`/${view}`)} />} />
+          <Route path="/channels" element={<Channels token={token} user={user} />} />
+          <Route path="/campaigns" element={<Campaigns token={token} user={user} />} />
+          <Route path="/leads" element={<Leads token={token} user={user} />} />
+          <Route path="/settings" element={<Settings token={token} user={user} theme={theme} onThemeChange={setTheme} />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
