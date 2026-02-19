@@ -3,7 +3,7 @@
 ## Authentication Endpoints
 
 ### POST /api/v1/login
-Authenticate user and receive access token.
+User authentication
 **Request**: `{ "username": "string", "password": "string" }`
 **Response**: `{ "access_token": "string", "user": { "username": "string", "role": "string", "tenant_id": "string" } }`
 
@@ -34,6 +34,10 @@ Get list of leads for current user's tenant.
 ### GET /api/v1/channels
 Get list of available marketing channels.
 **Response**: Array of channel objects with id, name, type, configuration.
+
+### GET /api/v1/analytics
+Get analytics data
+**Response**: `{ "metrics": {}, "performance": {}, "trends": {} }`
 
 ## Analytics & Trend Analysis
 
