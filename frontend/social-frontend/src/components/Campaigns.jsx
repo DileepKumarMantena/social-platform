@@ -11,10 +11,11 @@ const CHANNEL_COLORS = {
 };
 
 export default function Campaigns({ token, user }) {
+  const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [campaigns, setCampaigns] = useState([]);
   const canEdit = user?.role === "admin" || user?.role === "lead";
 
   const dummyCampaigns = [
@@ -87,12 +88,20 @@ export default function Campaigns({ token, user }) {
 
   const handleCreateCampaign = (e) => {
     e.preventDefault();
+    setError("");
     const formData = new FormData(e.target);
+    const channel = formData.get("channel");
+    
+    if (!channel || !formData.get("name") || !formData.get("budget")) {
+      setError("Please fill in all required fields");
+      return;
+    }
+    
     const newCampaign = {
       id: campaigns.length + 1,
       name: formData.get("name"),
-      channel_name: formData.get("channel").charAt(0).toUpperCase() + formData.get("channel").slice(1),
-      channel_slug: formData.get("channel"),
+      channel_name: channel.charAt(0).toUpperCase() + channel.slice(1),
+      channel_slug: channel,
       budget: parseFloat(formData.get("budget")),
       status: "draft",
       impressions: 0,
@@ -108,6 +117,14 @@ export default function Campaigns({ token, user }) {
 
   const handleViewResults = (campaign) => {
     setSelectedCampaign(campaign);
+  };
+
+  const handleStatusChange = (campaignId, newStatus) => {
+    setCampaigns(campaigns.map(campaign => 
+      campaign.id === campaignId 
+        ? { ...campaign, status: newStatus }
+        : campaign
+    ));
   };
 
   const getStatusColor = (status) => {
@@ -137,7 +154,7 @@ export default function Campaigns({ token, user }) {
   }
 
   return (
-    <div className="data-section">
+    <div className="campaigns">
       <header className="page-header page-header-row">
         <div>
           <h2>🚀 Campaigns</h2>
@@ -151,56 +168,55 @@ export default function Campaigns({ token, user }) {
       </header>
 
       {showForm && (
-        <div className="campaign-form-card">
-          <h3>📝 Create New Campaign</h3>
-          <form className="campaign-form" onSubmit={handleCreateCampaign}>
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="camp-name">Campaign Name</label>
-                <input
-                  id="camp-name"
-                  type="text"
-                  placeholder="Enter campaign name"
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="camp-channel">Channel</label>
-                <select id="camp-channel" className="form-select">
-                  <option value="">Select channel</option>
-                  <option value="facebook">📘 Facebook</option>
-                  <option value="instagram">📷 Instagram</option>
-                  <option value="linkedin">💼 LinkedIn</option>
-                  <option value="twitter">🐦 Twitter</option>
-                  <option value="google-ads">🔍 Google Ads</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="camp-budget">Budget ($)</label>
-                <input
-                  id="camp-budget"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  className="form-input"
-                />
-              </div>
+        <form onSubmit={handleCreateCampaign} className="campaign-form" style={{ marginBottom: "1.5rem" }}>
+          {error && <div className="campaigns-error-message" style={{ marginBottom: "1rem", color: "#d32f2f" }}>{error}</div>}
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="camp-name">Campaign Name</label>
+              <input
+                id="camp-name"
+                name="name"
+                type="text"
+                placeholder="Enter campaign name"
+                className="form-input"
+              />
             </div>
-            <div className="form-actions">
-              <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="btn-primary">
-                ✨ Create Campaign
-              </button>
+            <div className="form-group">
+              <label htmlFor="camp-channel">Channel</label>
+              <select id="camp-channel" name="channel" className="form-select">
+                <option value="">Select channel</option>
+                <option value="facebook">📘 Facebook</option>
+                <option value="instagram">📷 Instagram</option>
+                <option value="linkedin">💼 LinkedIn</option>
+                <option value="twitter">🐦 Twitter</option>
+                <option value="google-ads">🔍 Google Ads</option>
+              </select>
             </div>
-          </form>
-        </div>
+            <div className="form-group">
+              <label htmlFor="camp-budget">Budget ($)</label>
+              <input
+                id="camp-budget"
+                name="budget"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                className="form-input"
+              />
+            </div>
+          </div>
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary">
+              ✨ Create Campaign
+            </button>
+          </div>
+        </form>
       )}
-
       <div className="campaigns-grid">
-        {dummyCampaigns.map((campaign) => {
+        {campaigns.map((campaign) => {
           const color = CHANNEL_COLORS[campaign.channel_slug] || "#6366f1";
           return (
             <div key={campaign.id} className="campaign-card">
@@ -213,54 +229,48 @@ export default function Campaigns({ token, user }) {
                       {campaign.channel_slug === "instagram" && "📷"}
                       {campaign.channel_slug === "linkedin" && "💼"}
                       {campaign.channel_slug === "twitter" && "🐦"}
-                      {campaign.channel_slug === "google-ads" && "🔍"}
+                      {campaign.channel_slug === "google-ads" && "�"}
                     </span>
                     {campaign.channel_name}
                   </div>
+                  <div className="campaign-budget">${campaign.budget.toLocaleString()}</div>
                 </div>
                 <div className="campaign-status">
-                  <span className="status-indicator" style={{ color: getStatusColor(campaign.status) }}>
-                    {getStatusIcon(campaign.status)} {campaign.status}
-                  </span>
+                  {canEdit ? (
+                    <select 
+                      value={campaign.status || "draft"} 
+                      onChange={(e) => handleStatusChange(campaign.id, e.target.value)}
+                      className="status-select"
+                      style={{ 
+                        backgroundColor: getStatusColor(campaign.status),
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      <option value="draft">📝 Draft</option>
+                      <option value="pending">⏳ Pending</option>
+                      <option value="active">🟢 Active</option>
+                      <option value="completed">✅ Completed</option>
+                    </select>
+                  ) : (
+                    <span className={`status-badge status-${campaign.status || "draft"}`} style={{ backgroundColor: getStatusColor(campaign.status) }}>
+                      {campaign.status || "draft"}
+                    </span>
+                  )}
                 </div>
               </div>
-
-              <div className="campaign-metrics">
-                <div className="metric">
-                  <span className="metric-icon">👁️</span>
-                  <div className="metric-info">
-                    <span className="metric-value">{campaign.impressions.toLocaleString()}</span>
-                    <span className="metric-label">Impressions</span>
-                  </div>
-                </div>
-                <div className="metric">
-                  <span className="metric-icon">👆</span>
-                  <div className="metric-info">
-                    <span className="metric-value">{campaign.clicks.toLocaleString()}</span>
-                    <span className="metric-label">Clicks</span>
-                  </div>
-                </div>
-                <div className="metric">
-                  <span className="metric-icon">💝</span>
-                  <div className="metric-info">
-                    <span className="metric-value">{campaign.engagement}%</span>
-                    <span className="metric-label">Engagement</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="campaign-footer">
-                <div className="campaign-budget">
-                  <span className="budget-label">Budget:</span>
-                  <span className="budget-value">${campaign.budget.toLocaleString()}</span>
-                </div>
-                <button
-                  type="button"
-                  className="btn-results"
-                  onClick={() => handleViewResults(campaign)}
-                >
-                  📊 View Results
+              <div className="campaign-actions">
+                <button className="btn-secondary" onClick={() => handleViewResults(campaign)}>
+                  View Results
                 </button>
+                {canEdit && (
+                  <button className="btn-primary" onClick={() => setShowForm(true)}>
+                    Edit Campaign
+                  </button>
+                )}
               </div>
             </div>
           );

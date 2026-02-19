@@ -22,7 +22,7 @@ export default function Leads({ token, user }) {
 
   const fetchLeads = async (tenantId = null) => {
     try {
-      const data = await getLeads(token, tenantId || undefined);
+      const data = await getLeads(token, tenantId && tenantId !== "" ? tenantId : undefined);
       setLeads(Array.isArray(data) ? data : []);
     } catch {
       setLeads([]);
@@ -65,9 +65,20 @@ export default function Leads({ token, user }) {
       await updateLeadStatus(leadId, newStatus, token);
       fetchLeads(tenantFilter || null);
     } catch {
-      // Error
+      console.error("Failed to update lead status");
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const handleDeleteLead = async (leadId) => {
+    if (window.confirm("Are you sure you want to delete this lead?")) {
+      try {
+        // In real app, this would be API call to delete lead
+        setLeads(leads.filter(l => l.id !== leadId));
+      } catch {
+        console.error("Failed to delete lead");
+      }
     }
   };
 
@@ -147,7 +158,7 @@ export default function Leads({ token, user }) {
       </header>
       {showForm && (
         <form onSubmit={handleCreate} className="campaign-form" style={{ marginBottom: "1.5rem" }}>
-          {error && <div className="error-message" style={{ marginBottom: "1rem", color: "#d32f2f" }}>{error}</div>}
+          {error && <div className="leads-error-message" style={{ marginBottom: "1rem", color: "#d32f2f" }}>{error}</div>}
           <table>
             <tbody>
               <tr>
@@ -229,20 +240,20 @@ export default function Leads({ token, user }) {
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Company</th>
             <th>Status</th>
             <th>Date</th>
             <th>Follow up</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={7} className="loading-state">Loading...</td>
+              <td colSpan={8} className="loading-state">Loading...</td>
             </tr>
           ) : leads.length === 0 ? (
             <tr>
-              <td colSpan={7} className="empty-state">No leads found</td>
+              <td colSpan={8} className="empty-state">No leads found</td>
             </tr>
           ) : (
             leads.map((l) => (
@@ -262,14 +273,40 @@ export default function Leads({ token, user }) {
                     className="status-select"
                     value={l.status || "new"}
                     onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                    disabled={updating === l.id || !canEdit}
+                    disabled={updating === l.id}
                   >
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
                       </option>
                     ))}
                   </select>
+                </td>
+                <td>
+                  <button 
+                    className="delete-btn" 
+                    onClick={() => handleDeleteLead(l.id)}
+                    title="Delete Lead"
+                    disabled={updating === l.id}
+                    style={{
+                      background: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '6px 10px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      transition: 'background 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#c82333';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = '#dc3545';
+                    }}
+                  >
+                    🗑️
+                  </button>
                 </td>
               </tr>
             ))
