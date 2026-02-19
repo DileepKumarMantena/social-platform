@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
+import SuperAdminDashboard from "./components/SuperAdminDashboard";
 import Channels from "./components/Channels";
 import Campaigns from "./components/Campaigns";
 import Leads from "./components/Leads";
@@ -73,52 +74,84 @@ function AppContent() {
             <span className="nav-icon">◉</span>
             Dashboard
           </button>
-          <button
-            type="button"
-            className={`nav-btn ${location.pathname === "/channels" ? "active" : ""}`}
-            onClick={() => navigate("/channels")}
-          >
-            <span className="nav-icon">◆</span>
-            Channels
-          </button>
-          <button
-            type="button"
-            className={`nav-btn ${location.pathname === "/campaigns" ? "active" : ""}`}
-            onClick={() => navigate("/campaigns")}
-          >
-            <span className="nav-icon">◇</span>
-            Campaigns
-          </button>
-          <button
-            type="button"
-            className={`nav-btn ${location.pathname === "/leads" ? "active" : ""}`}
-            onClick={() => navigate("/leads")}
-          >
-            <span className="nav-icon">●</span>
-            Leads
-          </button>
-          <button
-            type="button"
-            className={`nav-btn ${location.pathname === "/analytics" ? "active" : ""}`}
-            onClick={() => navigate("/analytics")}
-          >
-            <span className="nav-icon">📈</span>
-            Analytics
-          </button>
-          <button
-            type="button"
-            className={`nav-btn ${location.pathname === "/scheduler" ? "active" : ""}`}
-            onClick={() => navigate("/scheduler")}
-          >
-            <span className="nav-icon">📅</span>
-            Scheduler
-          </button>
+          {user?.role === "super_admin" && (
+            <div className="nav-section">
+              <h3>Admin</h3>
+              <button
+                className={location.pathname === "/super-admin" ? "active" : ""}
+                onClick={() => navigate("/super-admin")}
+              >
+                <span className="nav-icon">⚙️</span>
+                Super Admin
+              </button>
+            </div>
+          )}
+          {user?.role !== "super_admin" && (
+            <div className="nav-section">
+              <h3>Campaigns</h3>
+              <button
+                className={`nav-btn ${location.pathname === "/campaigns" ? "active" : ""}`}
+                onClick={() => navigate("/campaigns")}
+              >
+                <span className="nav-icon">📊</span>
+                Campaigns
+              </button>
+            </div>
+          )}
+          {user?.role !== "super_admin" && (
+            <div className="nav-section">
+              <h3>Analytics</h3>
+              <button
+                className={`nav-btn ${location.pathname === "/analytics" ? "active" : ""}`}
+                onClick={() => navigate("/analytics")}
+              >
+                <span className="nav-icon">📈</span>
+                Analytics
+              </button>
+            </div>
+          )}
+          {user?.role !== "super_admin" && (
+            <div className="nav-section">
+              <h3>Leads</h3>
+              <button
+                className={`nav-btn ${location.pathname === "/leads" ? "active" : ""}`}
+                onClick={() => navigate("/leads")}
+              >
+                <span className="nav-icon">👥</span>
+                Leads
+              </button>
+            </div>
+          )}
+          {user?.role !== "super_admin" && (
+            <div className="nav-section">
+              <h3>Channels</h3>
+              <button
+                className={`nav-btn ${location.pathname === "/channels" ? "active" : ""}`}
+                onClick={() => navigate("/channels")}
+              >
+                <span className="nav-icon">📱</span>
+                Channels
+              </button>
+            </div>
+          )}
+          {user?.role === "user" && (
+            <div className="nav-section">
+              <h3>Scheduler</h3>
+              <button
+                className={`nav-btn ${location.pathname === "/scheduler" ? "active" : ""}`}
+                onClick={() => navigate("/scheduler")}
+              >
+                <span className="nav-icon">📅</span>
+                Scheduler
+              </button>
+            </div>
+          )}
           <button
             type="button"
             className={`nav-btn ${location.pathname === "/settings" ? "active" : ""}`}
             onClick={() => navigate("/settings")}
           >
-            <span className="nav-icon">⚙</span>
+            <span className="nav-icon">⚙️</span>
             Settings
           </button>
         </nav>
@@ -133,6 +166,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Dashboard token={token} user={user} onNavigate={(view) => navigate(`/${view}`)} />} />
           <Route path="/dashboard" element={<Dashboard token={token} user={user} onNavigate={(view) => navigate(`/${view}`)} />} />
+          <Route path="/super-admin" element={<SuperAdminDashboard auth={{ token, user }} />} />
           <Route path="/channels" element={<Channels token={token} user={user} />} />
           <Route path="/campaigns" element={<Campaigns token={token} user={user} />} />
           <Route path="/leads" element={<Leads token={token} user={user} />} />

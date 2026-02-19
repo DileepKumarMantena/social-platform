@@ -1,4 +1,39 @@
-# Social Platform API - New Features Documentation
+# Social Platform API - Complete Documentation
+
+## Authentication Endpoints
+
+### POST /api/v1/login
+Authenticate user and receive access token.
+**Request**: `{ "username": "string", "password": "string" }`
+**Response**: `{ "access_token": "string", "user": { "username": "string", "role": "string", "tenant_id": "string" } }`
+
+### POST /api/v1/create-tenant (Super Admin only)
+Create new tenant/customer with sequential ID.
+**Request**: `{ "name": "string" }`
+**Response**: `{ "success": true, "tenant_id": "tenant_0001", "message": "Tenant created successfully" }`
+
+### POST /api/v1/create-user (Lead only)
+Create new user within tenant with optional time-limited access.
+**Request**: `{ "username": "string", "password": "string", "role": "string", "tenant_id": "string", "access_days": "number" }`
+**Response**: `{ "success": true, "user_id": "user_0001", "expires_at": "2024-02-20T11:58:00Z", "message": "User created successfully" }`
+
+## Data Endpoints
+
+### GET /api/v1/tenants
+Get list of all tenants (Super Admin only).
+**Response**: Array of tenant objects with id, name, status, created_at.
+
+### GET /api/v1/campaigns
+Get list of campaigns for current user's tenant.
+**Response**: Array of campaign objects with id, name, channel, budget, status, metrics.
+
+### GET /api/v1/leads
+Get list of leads for current user's tenant.
+**Response**: Array of lead objects with id, name, status, contact information.
+
+### GET /api/v1/channels
+Get list of available marketing channels.
+**Response**: Array of channel objects with id, name, type, configuration.
 
 ## Analytics & Trend Analysis
 
@@ -15,6 +50,122 @@ Get comprehensive analytics dashboard data.
 **Response**: Overall metrics, channel breakdown, recent performance data.
 
 ## Team Activity Logs
+
+### GET /api/v1/activity-logs
+Get system activity logs for auditing (Super Admin only).
+**Response**: Array of log entries with timestamp, user, action, details.
+
+## Multi-Tenant Features
+
+### Role-Based Access
+- **Super Admin**: Full system access, tenant/user management
+- **Lead**: Tenant management, user creation, campaign control
+- **Admin**: Time-limited access, campaign management
+- **User**: Basic access, campaign viewing, scheduler usage
+
+### Time-Limited Access
+Admin users can be created with expiration dates for temporary access.
+**Access Days**: Number of days until access expires
+**Expiration**: Automatic calculation of end date
+**Status**: Admins cannot login after expiration
+
+### Sequential ID Generation
+- **Tenants**: tenant_0001, tenant_0002, etc.
+- **Users**: user_0001, user_0002, etc.
+**Format**: Zero-padded 4-digit numbers
+**Purpose**: Scalable identifier system
+
+## Error Responses
+
+### 401 Unauthorized
+Invalid credentials or expired admin access.
+**Response**: `{ "detail": "Invalid credentials" }`
+
+### 403 Forbidden
+Insufficient permissions for requested action.
+**Response**: `{ "detail": "Access denied" }`
+
+### 404 Not Found
+Requested resource does not exist.
+**Response**: `{ "detail": "Resource not found" }`
+
+### 422 Validation Error
+Invalid request data format.
+**Response**: `{ "detail": "Validation error details" }`
+
+## Rate Limiting
+
+### Request Limits
+- **Authentication**: 5 requests per minute
+- **Data Endpoints**: 100 requests per minute
+- **Analytics**: 50 requests per minute
+
+### Headers
+- **X-RateLimit-Limit**: Total requests allowed
+- **X-RateLimit-Remaining**: Requests remaining
+- **X-RateLimit-Reset**: Time when limit resets
+
+## Data Models
+
+### User Model
+```json
+{
+  "username": "string",
+  "role": "super_admin|lead|admin|user",
+  "tenant_id": "string",
+  "expires_at": "string|null",
+  "tenant_name": "string"
+}
+```
+
+### Tenant Model
+```json
+{
+  "id": "string",
+  "name": "string",
+  "status": "active|inactive",
+  "created_at": "string"
+}
+```
+
+### Campaign Model
+```json
+{
+  "id": "number",
+  "name": "string",
+  "channel_name": "string",
+  "channel_slug": "string",
+  "budget": "number",
+  "status": "draft|active|pending|completed",
+  "impressions": "number",
+  "clicks": "number",
+  "engagement": "number",
+  "created_at": "string"
+}
+```
+
+## Version Information
+
+### Current Version: v1.0
+### Base URL: http://localhost:8000/api/v1
+### Authentication: Bearer Token required for all endpoints except login
+
+## Security Features
+
+### Password Management
+- Passwords stored securely in backend
+- Frontend password visibility toggle for admin users
+- Encrypted transmission for all sensitive data
+
+### Tenant Isolation
+- Data completely separated by tenant
+- Users can only access their tenant's data
+- Super Admin can access all tenant data
+
+### Access Control
+- Role-based permissions enforced at API level
+- Time-limited access automatically enforced
+- Activity logging for audit trails
 
 ### GET /api/activity/logs
 Get team activity logs for the current tenant.

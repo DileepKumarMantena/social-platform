@@ -6,6 +6,7 @@ import database
 import random
 import string
 from datetime import datetime, timezone, timedelta
+from constants import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRE_MINUTES, TWO_FA_ENABLED, TWO_FA_CODE_LENGTH, TWO_FA_CODE_EXPIRE_MINUTES, MSG_LOGIN_SUCCESS, MSG_LOGIN_FAILED, MSG_2FA_REQUIRED, MSG_2FA_INVALID, MSG_UNAUTHORIZED
 
 router = APIRouter()
 security = HTTPBearer()
@@ -60,8 +61,8 @@ class TwoFactorResponse(BaseModel):
 
 
 def generate_2fa_code():
-    """Generate a 6-digit 2FA code"""
-    return ''.join(random.choices(string.digits, k=6))
+    """Generate a 2FA code"""
+    return ''.join(random.choices(string.digits, k=TWO_FA_CODE_LENGTH))
 
 
 def is_2fa_enabled(username: str):
@@ -70,73 +71,13 @@ def is_2fa_enabled(username: str):
     return user and user.get("role") == "admin"
 
 
-@router.post("/login/step1", response_model=TwoFactorResponse)
+@router.post("/login/step1", response_model=TokenResponse)
 def login_step1(body: LoginRequest):
-    """First step of login - validate credentials and issue 2FA if needed"""
-    user = next((u for u in database.USERS if u["username"] == body.username), None)
-    if not user or user["password"] != body.password:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
-
-    # Check if 2FA is enabled for this user
-    if is_2fa_enabled(body.username):
-        # Generate 2FA code
-        code = generate_2fa_code()
-        temp_token = f"temp_{body.username}_{random.randint(1000, 9999)}"
-        
-        # Store the 2FA code (in real app, this would be sent via SMS/email)
-        database.TWO_FA_TOKENS[temp_token] = {
-            "username": body.username,
-            "code": code,
-            "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        }
-        
-        return TwoFactorResponse(
-            success=True,
-            message=f"2FA code sent: {code} (Demo: code shown in response)",
-            temp_token=temp_token
-        )
-    else:
-        # No 2FA required, return regular token
-        tenant = database.TENANTS.get(user["tenant_id"], {})
-        tenant_name = tenant.get("name", user["tenant_id"])
-        
-        return TwoFactorResponse(
-            success=True,
-            message="Login successful",
-            temp_token=body.username  # Use username as token for non-2FA users
-        )
-
-
-@router.post("/login/step2", response_model=TokenResponse)
-def login_step2(body: TwoFactorVerifyRequest):
-    """Second step of login - verify 2FA code"""
+    """Direct login - no 2FA required"""
     user = next((u for u in database.USERS if u["username"] == body.username), None)
     if not user or user["password"] != body.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # For non-2FA users, just return token
-    if not is_2fa_enabled(body.username):
-        tenant = database.TENANTS.get(user["tenant_id"], {})
-        tenant_name = tenant.get("name", user["tenant_id"])
-        
-        return TokenResponse(
-            access_token=body.username,
-            user={
-                "username": user["username"],
-                "tenant_id": user["tenant_id"],
-                "tenant_name": tenant_name,
-                "role": user["role"],
-            },
-            requires_two_factor=False
-        )
-    
-    # For 2FA users, verify the code (demo: accept any 6-digit code)
-    if len(body.two_factor_code) != 6 or not body.two_factor_code.isdigit():
-        raise HTTPException(status_code=400, detail="Invalid 2FA code format")
-    
-    # In demo, we'll accept any valid 6-digit code
-    # In real app, you'd verify against stored code
-    
     tenant = database.TENANTS.get(user["tenant_id"], {})
     tenant_name = tenant.get("name", user["tenant_id"])
     
@@ -148,20 +89,76 @@ def login_step2(body: TwoFactorVerifyRequest):
             "tenant_name": tenant_name,
             "role": user["role"],
         },
-        requires_two_factor=True
+        requires_two_factor=False
     )
+
+
+@router.post("/create-tenant", response_model=dict)
+def create_tenant(body: dict):
+    """Super admin creates a new tenant/customer"""
+    # Check if user is super admin
+    # In real app, verify token and role
+    tenant_counter = len(database.TENANTS) + 1
+    tenant_id = f"tenant_{tenant_counter:04d}"
+    new_tenant = {
+        "id": tenant_id,
+        "name": body.get("name"),
+        "status": "active",
+        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    }
+    
+    # Add to tenants (in real app, save to database)
+    database.TENANTS[tenant_id] = new_tenant
+    
+    return {"success": True, "tenant_id": tenant_id, "message": "Tenant created successfully"}
+
+
+@router.post("/create-user", response_model=dict)
+def create_user(body: dict):
+    """Lead creates admin/user within their tenant"""
+    # Check if user is lead role
+    # In real app, verify token and role
+    
+    user_counter = len(database.USERS) + 1
+    user_id = f"user_{user_counter:04d}"
+    expires_at = None
+    
+    # Set expiration for admin users if specified
+    if body.get("role") == "admin" and body.get("access_days"):
+        from datetime import timedelta
+        expires_at = (datetime.now(timezone.utc) + timedelta(days=body.get("access_days"))).strftime("%Y-%m-%dT%H:%M:%SZ")
+    
+    new_user = {
+        "username": body.get("username"),
+        "password": body.get("password"),
+        "role": body.get("role"),
+        "tenant_id": body.get("tenant_id"),
+        "expires_at": expires_at
+    }
+    
+    # Add to users (in real app, save to database)
+    database.USERS.append(new_user)
+    
+    return {"success": True, "user_id": user_id, "expires_at": expires_at, "message": "User created successfully"}
 
 
 @router.post("/login", response_model=TokenResponse)
 def login_for_access_token(body: LoginRequest):
-    """Legacy login endpoint for backward compatibility"""
+    """Direct login endpoint - no 2FA required"""
     user = next((u for u in database.USERS if u["username"] == body.username), None)
     if not user or user["password"] != body.password:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
-
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Check if admin user has expired
+    if user.get("role") == "admin" and user.get("expires_at"):
+        from datetime import datetime, timezone
+        expires_at = datetime.fromisoformat(user["expires_at"].replace('Z', '+00:00'))
+        if datetime.now(timezone.utc) > expires_at:
+            raise HTTPException(status_code=401, detail="Admin access has expired")
+    
     tenant = database.TENANTS.get(user["tenant_id"], {})
     tenant_name = tenant.get("name", user["tenant_id"])
-
+    
     return TokenResponse(
         access_token=body.username,
         user={
@@ -169,40 +166,14 @@ def login_for_access_token(body: LoginRequest):
             "tenant_id": user["tenant_id"],
             "tenant_name": tenant_name,
             "role": user["role"],
+            "expires_at": user.get("expires_at")
         },
-        requires_two_factor=is_2fa_enabled(body.username)
+        requires_two_factor=False
     )
 
 
-@router.post("/register", response_model=TokenResponse)
-def register(body: RegisterRequest):
-    if any(u["username"] == body.username for u in database.USERS):
-        raise HTTPException(status_code=400, detail="Username already exists")
-    if len(body.password.strip()) < 4:
-        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
-    
-    tenant_id = f"tenant_{body.username}"
-    database.TENANTS[tenant_id] = {"name": body.tenant_name}
-    
-    new_user = {
-        "username": body.username,
-        "password": body.password,
-        "role": body.role,
-        "tenant_id": tenant_id,
-    }
-    database.USERS.append(new_user)
-    database.CHANNEL_CONNECTIONS[tenant_id] = []
-    
-    return TokenResponse(
-        access_token=body.username,
-        user={
-            "username": body.username,
-            "tenant_id": tenant_id,
-            "tenant_name": body.tenant_name,
-            "role": body.role,
-        },
-    )
 
+    
 
 @router.post("/change-password")
 def change_password(body: ChangePasswordRequest, current_user=Depends(get_current_user)):

@@ -14,6 +14,7 @@ export default function Campaigns({ token, user }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
   const canEdit = user?.role === "admin" || user?.role === "lead";
 
   const dummyCampaigns = [
@@ -34,8 +35,8 @@ export default function Campaigns({ token, user }) {
       name: "Product Launch",
       channel_name: "Instagram",
       channel_slug: "instagram",
-      budget: 3500,
-      status: "active",
+      budget: 3000,
+      status: "pending",
       impressions: 189000,
       clicks: 6700,
       engagement: 3.5,
@@ -46,8 +47,8 @@ export default function Campaigns({ token, user }) {
       name: "Brand Awareness",
       channel_name: "LinkedIn",
       channel_slug: "linkedin",
-      budget: 2500,
-      status: "pending",
+      budget: 2000,
+      status: "draft",
       impressions: 98000,
       clicks: 2100,
       engagement: 2.1,
@@ -56,9 +57,9 @@ export default function Campaigns({ token, user }) {
     {
       id: 4,
       name: "Holiday Special",
-      channel_name: "Google Ads",
-      channel_slug: "google-ads",
-      budget: 8000,
+      channel_name: "Twitter",
+      channel_slug: "twitter",
+      budget: 4500,
       status: "active",
       impressions: 512000,
       clicks: 15600,
@@ -67,11 +68,11 @@ export default function Campaigns({ token, user }) {
     },
     {
       id: 5,
-      name: "Newsletter Campaign",
-      channel_name: "Twitter",
-      channel_slug: "twitter",
-      budget: 1500,
-      status: "completed",
+      name: "Q1 Promotion",
+      channel_name: "Google Ads",
+      channel_slug: "google-ads",
+      budget: 3500,
+      status: "active",
       impressions: 67000,
       clicks: 3400,
       engagement: 5.1,
@@ -81,7 +82,29 @@ export default function Campaigns({ token, user }) {
 
   useEffect(() => {
     setLoading(false);
+    setCampaigns(dummyCampaigns);
   }, []);
+
+  const handleCreateCampaign = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newCampaign = {
+      id: campaigns.length + 1,
+      name: formData.get("name"),
+      channel_name: formData.get("channel").charAt(0).toUpperCase() + formData.get("channel").slice(1),
+      channel_slug: formData.get("channel"),
+      budget: parseFloat(formData.get("budget")),
+      status: "draft",
+      impressions: 0,
+      clicks: 0,
+      engagement: 0,
+      created_at: new Date().toISOString().split('T')[0],
+    };
+    
+    setCampaigns([...campaigns, newCampaign]);
+    setShowForm(false);
+    e.target.reset();
+  };
 
   const handleViewResults = (campaign) => {
     setSelectedCampaign(campaign);
@@ -130,7 +153,7 @@ export default function Campaigns({ token, user }) {
       {showForm && (
         <div className="campaign-form-card">
           <h3>📝 Create New Campaign</h3>
-          <form className="campaign-form">
+          <form className="campaign-form" onSubmit={handleCreateCampaign}>
             <div className="form-grid">
               <div className="form-group">
                 <label htmlFor="camp-name">Campaign Name</label>

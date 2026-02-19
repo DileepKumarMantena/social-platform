@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { login } from "../AppUtils";
+import { login } from "../api";
 import { Link } from "react-router-dom";
 
 export default function Login({ setAuth }) {
@@ -10,13 +10,26 @@ export default function Login({ setAuth }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    console.log("Attempting login...");
     try {
       const data = await login(username, password);
-      setAuth({
-        token: data.access_token,
-        user: data.user || { username: data.access_token, tenant_name: "Demo", role: "user" },
-      });
+      console.log("Login response:", data);
+      if (data.access_token) {
+        setAuth({
+          token: data.access_token,
+          user: data.user || { username: data.access_token, tenant_name: "Demo", role: "user" },
+        });
+        console.log("Login successful");
+        // Clear credentials for security
+        setUsername("");
+        setPassword("");
+        // Redirect to dashboard after successful login
+        window.location.href = "/dashboard";
+      } else {
+        setError("Login failed");
+      }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.detail || "Login failed");
     }
   };
@@ -26,6 +39,7 @@ export default function Login({ setAuth }) {
       <div className="login-card">
         <h2>Login</h2>
         <p className="login-subtitle">Sign in to access your dashboard</p>
+        
         <form onSubmit={handleSubmit} className="login-form">
           <table>
             <tbody>
@@ -40,6 +54,7 @@ export default function Login({ setAuth }) {
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    required
                   />
                 </td>
               </tr>
@@ -54,6 +69,7 @@ export default function Login({ setAuth }) {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                 </td>
               </tr>
@@ -66,9 +82,13 @@ export default function Login({ setAuth }) {
             </tbody>
           </table>
         </form>
-        {error && <p className="login-error">{error}</p>}
-        <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Don't have an account? <Link to="/register">Register</Link>
+        
+        {error && <p className="error-message">{error}</p>}
+        <p className="login-note">
+          <strong>Super Admin:</strong> super_admin / Super@123456<br/>
+          <strong>Demo Lead:</strong> demo_lead / Lead@123456<br/>
+          <strong>Demo Admin:</strong> demo_admin / Admin@123456<br/>
+          <strong>Demo User:</strong> demo_user / User@123456
         </p>
       </div>
     </div>

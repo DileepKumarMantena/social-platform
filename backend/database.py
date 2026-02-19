@@ -1,57 +1,115 @@
-# database.py - Multi-tenant demo data
+# database.py - Multi-tenant demo data with DEV mode support
 
-TENANTS = {
-    "tenant_123": {"name": "Acme Corp"},
-    "tenant_456": {"name": "Beta Inc"},
-    "tenant_789": {"name": "Gamma Ltd"},
-    "tenant_101": {"name": "Delta Co"},
-    "tenant_hippo": {"name": "Hippo Cloud"},
-    "tenant_nlite": {"name": "Nlite"},
-}
+from constants import DEV, DEMO_USERS, DEMO_TENANTS, CHANNEL_COLORS, STATUS_DRAFT, STATUS_ACTIVE, STATUS_PENDING, STATUS_APPROVED, STATUS_COMPLETED, LEAD_STATUS_NEW, LEAD_STATUS_CONTACTED, LEAD_STATUS_QUALIFIED, LEAD_STATUS_CLOSED, ROLE_ADMIN, ROLE_LEAD, ROLE_USER, CHANNEL_FACEBOOK, CHANNEL_INSTAGRAM, CHANNEL_LINKEDIN, CHANNEL_TWITTER, CHANNEL_YOUTUBE, CHANNEL_GOOGLE_ADS
 
-USERS = [
-    # Acme Corp
-    {"username": "admin", "password": "admin", "role": "admin", "tenant_id": "tenant_123"},
-    {"username": "sales", "password": "sales", "role": "lead", "tenant_id": "tenant_123"},
-    {"username": "support_mike", "password": "Support@123", "role": "user", "tenant_id": "tenant_123"},
-    {"username": "john_viewer", "password": "viewer123", "role": "user", "tenant_id": "tenant_123"},
-    
-    # Beta Inc
-    {"username": "manager_emily", "password": "Manager@123", "role": "admin", "tenant_id": "tenant_456"},
-    {"username": "sales_peter", "password": "Sales@321", "role": "lead", "tenant_id": "tenant_456"},
-    {"username": "analyst_bob", "password": "analyst123", "role": "user", "tenant_id": "tenant_456"},
-    
-    # Gamma Ltd
-    {"username": "hr_linda", "password": "HR@123", "role": "user", "tenant_id": "tenant_789"},
-    {"username": "finance_raj", "password": "Finance@123", "role": "user", "tenant_id": "tenant_789"},
-    {"username": "marketing_sarah", "password": "marketing123", "role": "admin", "tenant_id": "tenant_789"},
-    {"username": "sales_tom", "password": "sales123", "role": "lead", "tenant_id": "tenant_789"},
-    
-    # Delta Co
-    {"username": "admin_susan", "password": "Admin@321", "role": "admin", "tenant_id": "tenant_101"},
-    {"username": "developer_steve", "password": "Dev@123", "role": "user", "tenant_id": "tenant_101"},
-    {"username": "sales_rachel", "password": "Sales@456", "role": "lead", "tenant_id": "tenant_101"},
-    
-    # Hippo Cloud
-    {"username": "hippo_admin", "password": "hippo123", "role": "admin", "tenant_id": "tenant_hippo"},
-    {"username": "hippo_lead", "password": "hippo456", "role": "lead", "tenant_id": "tenant_hippo"},
-    {"username": "hippo_viewer", "password": "hippo789", "role": "user", "tenant_id": "tenant_hippo"},
-    
-    # Nlite
-    {"username": "nlite_admin", "password": "nlite123", "role": "admin", "tenant_id": "tenant_nlite"},
-    {"username": "nlite_lead", "password": "nlite456", "role": "lead", "tenant_id": "tenant_nlite"},
-    {"username": "nlite_viewer", "password": "nlite789", "role": "user", "tenant_id": "tenant_nlite"},
-]
+# Data source selector
+def get_tenant_data():
+    """Get tenant data based on DEV mode"""
+    if DEV:
+        return DEMO_TENANTS
+    else:
+        # TODO: Implement database query for tenants
+        return []
 
-# All available channel types (Facebook, Instagram, LinkedIn, Twitter, YouTube, Google Ads)
-CHANNELS = [
-    {"id": 1, "name": "Facebook", "slug": "facebook"},
-    {"id": 2, "name": "Instagram", "slug": "instagram"},
-    {"id": 3, "name": "LinkedIn", "slug": "linkedin"},
-    {"id": 4, "name": "Twitter", "slug": "twitter"},
-    {"id": 5, "name": "YouTube", "slug": "youtube"},
-    {"id": 6, "name": "Google Ads", "slug": "google-ads"},
-]
+def get_user_data():
+    """Get user data based on DEV mode"""
+    if DEV:
+        return DEMO_USERS
+    else:
+        # TODO: Implement database query for users
+        return []
+
+def get_channel_data():
+    """Get channel data based on DEV mode"""
+    if DEV:
+        return [
+            {"id": 1, "name": "Facebook", "slug": CHANNEL_FACEBOOK},
+            {"id": 2, "name": "Instagram", "slug": CHANNEL_INSTAGRAM},
+            {"id": 3, "name": "LinkedIn", "slug": CHANNEL_LINKEDIN},
+            {"id": 4, "name": "Twitter", "slug": CHANNEL_TWITTER},
+            {"id": 5, "name": "YouTube", "slug": CHANNEL_YOUTUBE},
+            {"id": 6, "name": "Google Ads", "slug": CHANNEL_GOOGLE_ADS},
+        ]
+    else:
+        # TODO: Implement database query for channels
+        return []
+
+def get_campaign_data():
+    """Get campaign data based on DEV mode"""
+    if DEV:
+        return [
+            {"id": 1, "name": "Summer Sale", "channel_id": 1, "channel_name": "Facebook", "channel_slug": CHANNEL_FACEBOOK, "budget": 5000, "status": STATUS_ACTIVE, "tenant_id": "tenant_123", "created_at": "2024-01-15T10:00:00Z"},
+            {"id": 2, "name": "Product Launch", "channel_id": 2, "channel_name": "Instagram", "channel_slug": CHANNEL_INSTAGRAM, "budget": 3000, "status": STATUS_PENDING, "tenant_id": "tenant_123", "created_at": "2024-01-20T14:00:00Z"},
+            {"id": 3, "name": "Brand Awareness", "channel_id": 3, "channel_name": "LinkedIn", "channel_slug": CHANNEL_LINKEDIN, "budget": 2000, "status": STATUS_DRAFT, "tenant_id": "tenant_123", "created_at": "2024-01-25T11:00:00Z"},
+        ]
+    else:
+        # TODO: Implement database query for campaigns
+        return []
+
+def get_lead_data():
+    """Get lead data based on DEV mode"""
+    if DEV:
+        return [
+            {"id": 1, "name": "John Doe", "email": "john@example.com", "phone": "+1234567890", "company": "Acme Corp", "status": LEAD_STATUS_NEW, "source": "Facebook", "tenant_id": "tenant_123", "created_at": "2024-01-15T09:00:00Z"},
+            {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "phone": "+0987654321", "company": "Beta Inc", "status": LEAD_STATUS_CONTACTED, "source": "LinkedIn", "tenant_id": "tenant_123", "created_at": "2024-01-16T10:30:00Z"},
+            {"id": 3, "name": "Bob Johnson", "email": "bob@example.com", "phone": "+1122334455", "company": "Gamma Ltd", "status": LEAD_STATUS_QUALIFIED, "source": "Twitter", "tenant_id": "tenant_123", "created_at": "2024-01-17T11:15:00Z"},
+        ]
+    else:
+        # TODO: Implement database query for leads
+        return []
+
+def get_analytics_data():
+    """Get analytics data based on DEV mode"""
+    if DEV:
+        return {
+            "trends": {
+                "best_performing_post": {"title": "Summer Sale Announcement", "engagement": 85, "channel": "Facebook"},
+                "best_channel": {"name": "Facebook", "performance": 45},
+                "optimal_time": {"day": "Tuesday", "time": "14:00"},
+            },
+            "recommendations": [
+                {"type": "posting_time", "message": "Post more on Tuesdays at 2 PM for higher engagement"},
+                {"type": "content", "message": "Video content performs 30% better than images"},
+                {"type": "channel", "message": "Focus more on LinkedIn for B2B leads"},
+            ],
+            "dashboard": {
+                "total_impressions": 2400000,
+                "engagement_rate": 8.5,
+                "click_through_rate": 3.2,
+                "top_channels": [
+                    {"name": "Facebook", "percentage": 45, "color": "#1877f2"},
+                    {"name": "Instagram", "percentage": 30, "color": "#e4405f"},
+                    {"name": "LinkedIn", "percentage": 25, "color": "#0a66c2"},
+                ],
+                "optimal_times": [
+                    {"day": "Monday", "time": "09:00", "engagement": 75},
+                    {"day": "Tuesday", "time": "14:00", "engagement": 85},
+                    {"day": "Wednesday", "time": "16:00", "engagement": 70},
+                ],
+                "demographics": {
+                    "18-24": 25,
+                    "25-34": 35,
+                    "35-44": 25,
+                    "45+": 15,
+                },
+                "trending_content": [
+                    {"type": "video", "title": "Product Demo", "views": 50000, "engagement": 12},
+                    {"type": "image", "title": "Behind the Scenes", "views": 30000, "engagement": 8},
+                    {"type": "text", "title": "Industry Tips", "views": 20000, "engagement": 6},
+                ],
+            }
+        }
+    else:
+        # TODO: Implement database query for analytics
+        return {}
+
+# Legacy compatibility - keep old variable names for existing code
+TENANTS = {tenant["id"]: tenant for tenant in get_tenant_data()}
+USERS = get_user_data()
+CHANNELS = get_channel_data()
+CAMPAIGNS = get_campaign_data()
+LEADS = get_lead_data()
+ANALYTICS_DATA = get_analytics_data()
 
 # Per-tenant channel connections: {tenant_id: [channel_id, ...]}
 CHANNEL_CONNECTIONS = {
@@ -63,91 +121,5 @@ CHANNEL_CONNECTIONS = {
     "tenant_nlite": [1, 2],
 }
 
-CAMPAIGNS = [
-    {
-        "id": 1,
-        "name": "Summer Sale Campaign",
-        "channel_id": 1,
-        "channel_name": "Facebook",
-        "channel_slug": "facebook",
-        "budget": 1000.0,
-        "status": "active",
-        "tenant_id": "tenant_123",
-        "tenant_name": "Acme Corp",
-        "created_at": "2025-01-15T08:30:00",
-        "created_by": "admin",
-        "approved_by": "admin",
-        "approved_at": "2025-01-15T09:45:00"
-    },
-    {
-        "id": 2,
-        "name": "Product Launch",
-        "channel_id": 2,
-        "channel_name": "Instagram",
-        "channel_slug": "instagram",
-        "budget": 1500.0,
-        "status": "active",
-        "tenant_id": "tenant_123",
-        "tenant_name": "Acme Corp",
-        "created_at": "2025-01-16T09:00:00",
-        "created_by": "sales",
-        "approved_by": "admin",
-        "approved_at": "2025-01-16T09:50:00"
-    },
-    {
-        "id": 3,
-        "name": "Brand Awareness",
-        "channel_id": 1,
-        "channel_name": "Facebook",
-        "channel_slug": "facebook",
-        "budget": 800.0,
-        "status": "active",
-        "tenant_id": "tenant_456",
-        "tenant_name": "Beta Inc",
-        "created_at": "2025-01-17T10:30:00",
-        "created_by": "manager_emily",
-        "approved_by": "manager_emily",
-        "approved_at": "2025-01-17T10:35:00"
-    }
-]
-
-LEADS = [
-    {"id": 1, "name": "John Doe", "email": "john@example.com", "tenant_id": "tenant_123", "status": "new", "created_at": "2025-01-15T10:00:00"},
-    {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "tenant_id": "tenant_123", "status": "contacted", "created_at": "2025-01-16T11:30:00"},
-    {"id": 3, "name": "Bob Wilson", "email": "bob@example.com", "tenant_id": "tenant_456", "status": "qualified", "created_at": "2025-01-17T09:00:00"},
-    {"id": 4, "name": "Alice Brown", "email": "alice@example.com", "tenant_id": "tenant_456", "status": "new", "created_at": "2025-01-18T14:00:00"},
-]
-
-# Analytics data for trend analysis
-ANALYTICS = [
-    {"id": 1, "campaign_id": 1, "tenant_id": "tenant_123", "channel_id": 1, "impressions": 1500, "clicks": 75, "engagement_rate": 5.0, "posted_at": "2025-01-15T09:00:00"},
-    {"id": 2, "campaign_id": 1, "tenant_id": "tenant_123", "channel_id": 2, "impressions": 800, "clicks": 40, "engagement_rate": 5.0, "posted_at": "2025-01-15T14:00:00"},
-    {"id": 3, "campaign_id": 2, "tenant_id": "tenant_123", "channel_id": 1, "impressions": 2000, "clicks": 120, "engagement_rate": 6.0, "posted_at": "2025-01-16T10:00:00"},
-    {"id": 4, "campaign_id": 2, "tenant_id": "tenant_123", "channel_id": 3, "impressions": 1200, "clicks": 48, "engagement_rate": 4.0, "posted_at": "2025-01-16T16:00:00"},
-    {"id": 5, "campaign_id": 3, "tenant_id": "tenant_456", "channel_id": 1, "impressions": 900, "clicks": 45, "engagement_rate": 5.0, "posted_at": "2025-01-17T11:00:00"},
-    {"id": 6, "campaign_id": 3, "tenant_id": "tenant_456", "channel_id": 2, "impressions": 600, "clicks": 18, "engagement_rate": 3.0, "posted_at": "2025-01-17T15:00:00"},
-]
-
-# Team activity logs
-ACTIVITY_LOGS = [
-    {"id": 1, "tenant_id": "tenant_123", "user_id": "admin", "action": "created", "entity_type": "campaign", "entity_id": 1, "timestamp": "2025-01-15T08:30:00"},
-    {"id": 2, "tenant_id": "tenant_123", "user_id": "sales", "action": "modified", "entity_type": "campaign", "entity_id": 1, "timestamp": "2025-01-15T09:15:00"},
-    {"id": 3, "tenant_id": "tenant_123", "user_id": "admin", "action": "approved", "entity_type": "campaign", "entity_id": 2, "timestamp": "2025-01-16T09:45:00"},
-    {"id": 4, "tenant_id": "tenant_456", "user_id": "manager_emily", "action": "created", "entity_type": "campaign", "entity_id": 3, "timestamp": "2025-01-17T10:30:00"},
-]
-
-# Campaign comments and approval workflow
-CAMPAIGN_COMMENTS = [
-    {"id": 1, "campaign_id": 1, "tenant_id": "tenant_123", "user_id": "admin", "comment": "Great campaign idea! Let's increase the budget.", "timestamp": "2025-01-15T08:45:00"},
-    {"id": 2, "campaign_id": 1, "tenant_id": "tenant_123", "user_id": "sales", "comment": "I think we should target a younger demographic.", "timestamp": "2025-01-15T09:00:00"},
-    {"id": 3, "campaign_id": 2, "tenant_id": "tenant_123", "user_id": "admin", "comment": "Approved for launch.", "timestamp": "2025-01-16T09:50:00"},
-]
-
 # 2FA tokens (demo purposes)
 TWO_FA_TOKENS = {}
-
-# Follow-up sequences
-FOLLOW_UP_SEQUENCES = [
-    {"id": 1, "tenant_id": "tenant_123", "lead_id": 1, "type": "email", "status": "pending", "scheduled_at": "2025-01-15T12:00:00", "message": "Thank you for your interest! Here's more information..."},
-    {"id": 2, "tenant_id": "tenant_123", "lead_id": 2, "type": "sms", "status": "sent", "scheduled_at": "2025-01-16T15:00:00", "message": "Quick follow-up regarding your inquiry."},
-]
